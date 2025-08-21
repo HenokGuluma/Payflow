@@ -46,30 +46,8 @@ export function ExportDialog({
   }
 
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
-    if (!start && !end) return data
-
-    if (filterByDate) {
-      return filterByDate(data, start!, end!)
-    }
-
-    return data.filter((item) => {
-      let itemDate: Date
-      
-      if (Array.isArray(item)) {
-        // For array format: [status, customer, phone, amount, method, date, ref1, ref2]
-        const dateStr = item[5] // Date is at index 5
-        itemDate = new Date(dateStr)
-      } else {
-        // For object format
-        itemDate = new Date(item.date || item.createdAt || item.timestamp)
-      }
-      
-      if (isNaN(itemDate.getTime())) return true // Include if date parsing fails
-      
-      if (start && itemDate < start) return false
-      if (end && itemDate > end) return false
-      return true
-    })
+    // Temporarily disable date filtering to test export functionality
+    return data
   }
 
   const calculateFilteredSummary = (filteredData: any[], originalSummary: Record<string, any>) => {
@@ -130,12 +108,11 @@ export function ExportDialog({
       console.log("=== EXPORT DEBUG ===")
       console.log("Original data length:", data.length)
       console.log("Original data sample:", data.slice(0, 2))
-      console.log("Filtered data length:", filteredData.length)
+      console.log("Filtered data length (no filtering applied):", filteredData.length)
       console.log("Filtered data sample:", filteredData.slice(0, 2))
       console.log("Headers:", headers)
       console.log("Filtered summary:", filteredSummary)
-      console.log("Start date:", startDate)
-      console.log("End date:", endDate)
+      console.log("Date filtering: DISABLED")
       console.log("=== END DEBUG ===")
 
       const exportData = {
