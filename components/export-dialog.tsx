@@ -53,35 +53,39 @@ export function ExportDialog({
     }
 
     return data.filter((item) => {
-      let itemDate: Date
+      let itemDateStr: string
       
       if (Array.isArray(item)) {
         // For array format: [status, customer, phone, amount, method, date, ref1, ref2]
-        const dateStr = item[5] // Date is at index 5
-        
-        // Parse date format "31/08/2025" (DD/MM/YYYY)
-        if (dateStr && typeof dateStr === 'string') {
-          const dateParts = dateStr.split('/')
-          if (dateParts.length === 3) {
-            const day = parseInt(dateParts[0], 10)
-            const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
-            const year = parseInt(dateParts[2], 10)
-            // Create date at start of day in local timezone
-            itemDate = new Date(year, month, day, 0, 0, 0, 0)
-          } else {
-            itemDate = new Date(dateStr)
-          }
-        } else {
-          return true // Include if date parsing fails
-        }
+        itemDateStr = item[5] // Date is at index 5
       } else {
-        // For object format
-        itemDate = new Date(item.date || item.createdAt || item.timestamp)
+        // For object format, convert to date string
+        const date = new Date(item.date || item.createdAt || item.timestamp)
+        itemDateStr = date.toLocaleDateString('en-GB') // DD/MM/YYYY format
       }
       
-      if (isNaN(itemDate.getTime())) return true // Include if date parsing fails
+      if (!itemDateStr || typeof itemDateStr !== 'string') {
+        return true // Include if date parsing fails
+      }
+
+      // Parse date format "31/08/2025" (DD/MM/YYYY)
+      const dateParts = itemDateStr.split('/')
+      if (dateParts.length !== 3) {
+        return true // Include if date format is unexpected
+      }
+
+      const day = parseInt(dateParts[0], 10)
+      const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
+      const year = parseInt(dateParts[2], 10)
       
-      // Normalize dates to start of day for comparison
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        return true // Include if date parsing fails
+      }
+
+      // Create date at start of day in local timezone
+      const itemDate = new Date(year, month, day, 0, 0, 0, 0)
+      
+      // Convert filter dates to start/end of day for proper comparison
       if (start) {
         const startOfDay = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0)
         if (itemDate < startOfDay) return false
@@ -169,20 +173,40 @@ export function ExportDialog({
       console.log("Filtered data sample:", filteredData.slice(0, 2))
       console.log("Headers:", headers)
       console.log("Filtered summary:", filteredSummary)
-      console.log("Start date:", startDate)
-      console.log("End date:", endDate)
+      console.log("Start date:", startDate ? startDate.toLocaleDateString('en-GB') : "None")
+      console.log("End date:", endDate ? endDate.toLocaleDateString('en-GB') : "None")
       console.log("Date filtering:", startDate || endDate ? "ENABLED" : "DISABLED")
       
       // Additional debug info for date filtering
       if (startDate || endDate) {
         console.log("Sample data dates:", data.slice(0, 5).map(item => Array.isArray(item) ? item[5] : item.date))
-        if (startDate) {
-          const normalizedStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0)
-          console.log("Normalized start date:", normalizedStart)
-        }
-        if (endDate) {
-          const normalizedEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
-          console.log("Normalized end date:", normalizedEnd)
+        
+        // Test the filtering logic with sample data
+        const sampleItem = data[0]
+        if (sampleItem && Array.isArray(sampleItem)) {
+          const sampleDateStr = sampleItem[5]
+          console.log("Testing filter with sample date:", sampleDateStr)
+          
+          if (sampleDateStr && typeof sampleDateStr === 'string') {
+            const dateParts = sampleDateStr.split('/')
+            if (dateParts.length === 3) {
+              const day = parseInt(dateParts[0], 10)
+              const month = parseInt(dateParts[1], 10) - 1
+              const year = parseInt(dateParts[2], 10)
+              const sampleDate = new Date(year, month, day, 0, 0, 0, 0)
+              console.log("Parsed sample date:", sampleDate.toLocaleDateString('en-GB'))
+              
+              if (startDate) {
+                const startOfDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0)
+                console.log("Start comparison:", sampleDate >= startOfDay, sampleDate.toISOString(), "vs", startOfDay.toISOString())
+              }
+              
+              if (endDate) {
+                const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
+                console.log("End comparison:", sampleDate <= endOfDay, sampleDate.toISOString(), "vs", endOfDay.toISOString())
+              }
+            }
+          }
         }
       }
       console.log("=== END DEBUG ===")
