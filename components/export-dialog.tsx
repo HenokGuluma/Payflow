@@ -109,8 +109,14 @@ export function ExportDialog({
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
 
-      console.log("Filtered data:", filteredData)
+      console.log("=== EXPORT DEBUG ===")
+      console.log("Original data length:", data.length)
+      console.log("Original data sample:", data.slice(0, 2))
+      console.log("Filtered data length:", filteredData.length)
+      console.log("Filtered data sample:", filteredData.slice(0, 2))
+      console.log("Headers:", headers)
       console.log("Filtered summary:", filteredSummary)
+      console.log("=== END DEBUG ===")
 
       const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]

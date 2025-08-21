@@ -34,24 +34,12 @@ export class ExportService {
             margin-bottom: 30px; 
             border-bottom: 2px solid #10b981; 
             padding-bottom: 20px; 
-            position: relative;
           }
           .logo { 
             font-size: 18px; 
             font-weight: bold; 
             color: #10b981; 
             margin-bottom: 10px; 
-          }
-          .watermark {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            opacity: 0.1;
-            font-size: 48px;
-            font-weight: bold;
-            color: #10b981;
-            transform: rotate(-15deg);
-            pointer-events: none;
           }
           .title { 
             font-size: 24px; 
@@ -126,7 +114,6 @@ export class ExportService {
       </head>
       <body>
         <div class="header">
-          <div class="watermark">PayEthio</div>
           <div class="logo">PayEthio Payment Solutions</div>
           <div class="title">${exportData.title}</div>
           ${exportData.startDate && exportData.endDate ? 
@@ -155,12 +142,16 @@ export class ExportService {
               </tr>
             </thead>
             <tbody>
-              ${exportData.data.map(row => 
-                `<tr>${Array.isArray(row) ? 
-                  row.map(cell => `<td>${cell}</td>`).join('') :
-                  exportData.headers.map(header => `<td>${row[header] || ''}</td>`).join('')
-                }</tr>`
-              ).join('')}
+              ${exportData.data.map(row => {
+                if (Array.isArray(row)) {
+                  return `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`
+                } else {
+                  return `<tr>${exportData.headers.map(header => {
+                    const value = row[header.toLowerCase()] || row[header] || ''
+                    return `<td>${value}</td>`
+                  }).join('')}</tr>`
+                }
+              }).join('')}
             </tbody>
           </table>
         ` : `
