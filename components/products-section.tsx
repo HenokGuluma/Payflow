@@ -18,7 +18,7 @@ export function ProductsSection() {
               <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
                 <Code className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">PayFlow API</h3>
+              <h3 className="text-2xl font-bold text-slate-900">PayEthio API</h3>
             </div>
             <p className="text-slate-600 mb-6">
               Powerful REST API for developers to integrate payments into any application. Complete with webhooks, SDKs,
@@ -50,7 +50,7 @@ export function ProductsSection() {
               <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
                 <Store className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">PayFlow Checkout</h3>
+              <h3 className="text-2xl font-bold text-slate-900">PayEthio Checkout</h3>
             </div>
             <p className="text-slate-600 mb-6">
               Pre-built checkout pages that you can customize and embed. No coding required - just copy and paste a
@@ -84,7 +84,7 @@ export function ProductsSection() {
               <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mr-4">
                 <Smartphone className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">PayFlow Mobile</h3>
+              <h3 className="text-2xl font-bold text-slate-900">PayEthio Mobile</h3>
             </div>
             <p className="text-slate-600 mb-6">
               Accept payments on the go with our mobile app. Perfect for small businesses, market vendors, and service
@@ -116,7 +116,7 @@ export function ProductsSection() {
               <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mr-4">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">PayFlow Analytics</h3>
+              <h3 className="text-2xl font-bold text-slate-900">PayEthio Analytics</h3>
             </div>
             <p className="text-slate-600 mb-6">
               Comprehensive dashboard with insights into your payment performance, customer behavior, and business

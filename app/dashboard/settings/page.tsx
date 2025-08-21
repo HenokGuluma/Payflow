@@ -21,15 +21,15 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState({
     firstName: "Henok",
     lastName: "Taddesse",
-    email: "henokt@payflow.com",
+    email: "henokt@payethio.com",
     phone: "+251911335130",
-    company: "PayFlow Ethiopia",
+    company: "PayEthio Ethiopia",
     timezone: "Africa/Addis_Ababa",
   })
 
   useEffect(() => {
     const userType = localStorage.getItem("payflow_user_type") || "demo"
-    const userEmail = localStorage.getItem("payflow_user_email") || "henokt@payflow.com"
+    const userEmail = localStorage.getItem("payflow_user_email") || "henokt@payethio.com"
 
     if (userType === "registered") {
       const emailParts = userEmail.split("@")[0].split(".")

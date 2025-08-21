@@ -159,7 +159,7 @@ export function PricingSection() {
           </p>
           <Button
             className="bg-green-600 hover:bg-green-700"
-            onClick={() => window.open("https://calendly.com/payflow-sales", "_blank")}
+            onClick={() => window.open("https://calendly.com/payethio-sales", "_blank")}
           >
             Schedule a Call
           </Button>

@@ -5,7 +5,7 @@ export function AboutSection() {
     <section id="about" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">About PayFlow</h2>
+          <h2 className="text-4xl font-bold text-slate-900 mb-6">About PayEthio</h2>
           <p className="text-xl text-slate-600 leading-relaxed">
             We're revolutionizing digital payments across Africa and beyond. Our mission is to make financial
             transactions seamless, secure, and accessible for businesses of all sizes.
@@ -16,7 +16,7 @@ export function AboutSection() {
           <div>
             <h3 className="text-2xl font-bold text-slate-900 mb-6">Our Story</h3>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Founded in 2020, PayFlow emerged from a simple observation: businesses across Africa needed better payment
+              Founded in 2020, PayEthio emerged from a simple observation: businesses across Africa needed better payment
               solutions. We started with a vision to bridge the gap between traditional banking and modern digital
               commerce.
             </p>

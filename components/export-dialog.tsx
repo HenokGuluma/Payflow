@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -23,13 +22,13 @@ interface ExportDialogProps {
   formatDataForExport?: (data: any[]) => any[][]
 }
 
-export function ExportDialog({ 
-  title, 
-  data, 
-  summary = {}, 
-  children, 
+export function ExportDialog({
+  title,
+  data,
+  summary = {},
+  children,
   filterByDate,
-  formatDataForExport 
+  formatDataForExport
 }: ExportDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [startDate, setStartDate] = useState<Date>()
@@ -73,21 +72,21 @@ export function ExportDialog({
 
     // Calculate filtered metrics
     newSummary["Total Transactions"] = filteredData.length.toLocaleString()
-    
+
     const totalAmount = filteredData.reduce((sum, item) => {
-      const amount = typeof item === 'object' && item.amount 
-        ? item.amount 
+      const amount = typeof item === 'object' && item.amount
+        ? item.amount
         : (Array.isArray(item) && item[2] ? parseFloat(item[2].replace(/[^\d]/g, '')) || 0 : 0)
       return sum + amount
     }, 0)
-    
+
     newSummary["Total Amount"] = `ETB ${totalAmount.toLocaleString()}`
 
-    // Copy other summary fields
+    // Copy other summary fields that might not be amount-related
     Object.keys(originalSummary).forEach(key => {
-      if (!key.toLowerCase().includes('total') || 
+      if (!key.toLowerCase().includes('total') ||
           (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
-        newSummary[key] = originalSummary[key]
+        newSummary[key] = originalSummary[key];
       }
     })
 
@@ -97,15 +96,15 @@ export function ExportDialog({
   const handleDownload = async () => {
     try {
       setIsLoading(true)
-      
+
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
-      
+
       const headers = processedData.length > 0 && Array.isArray(processedData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
         : Object.keys(processedData[0] || {})
-      
+
       const exportData = {
         title,
         headers,
@@ -129,15 +128,15 @@ export function ExportDialog({
 
     try {
       setIsLoading(true)
-      
+
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
-      
+
       const headers = processedData.length > 0 && Array.isArray(processedData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
         : Object.keys(processedData[0] || {})
-      
+
       const exportData = {
         title,
         headers,
@@ -155,7 +154,7 @@ export function ExportDialog({
       }
 
       const success = await ExportService.sendEmail(exportData, filename, emailOptions)
-      
+
       if (success) {
         setIsOpen(false)
         setEmail("")
