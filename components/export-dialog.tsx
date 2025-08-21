@@ -209,8 +209,10 @@ export function ExportDialog({
         // For this fix, we'll create a placeholder if filtering is active.
         // A more correct implementation would involve a prop like `onCalculateSummary: (filteredData) => summaryObject`.
         return summary; // Fallback to original summary if filtering is applied but calculation logic is missing.
+      }
     }
     return undefined;
+  }
   }
 
 
