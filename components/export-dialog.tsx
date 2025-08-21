@@ -66,7 +66,8 @@ export function ExportDialog({
             const day = parseInt(dateParts[0], 10)
             const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
             const year = parseInt(dateParts[2], 10)
-            itemDate = new Date(year, month, day)
+            // Create date at start of day in local timezone
+            itemDate = new Date(year, month, day, 0, 0, 0, 0)
           } else {
             itemDate = new Date(dateStr)
           }
@@ -80,8 +81,17 @@ export function ExportDialog({
       
       if (isNaN(itemDate.getTime())) return true // Include if date parsing fails
       
-      if (start && itemDate < start) return false
-      if (end && itemDate > end) return false
+      // Normalize dates to start of day for comparison
+      if (start) {
+        const startOfDay = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0)
+        if (itemDate < startOfDay) return false
+      }
+      
+      if (end) {
+        const endOfDay = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
+        if (itemDate > endOfDay) return false
+      }
+      
       return true
     })
   }
@@ -162,6 +172,19 @@ export function ExportDialog({
       console.log("Start date:", startDate)
       console.log("End date:", endDate)
       console.log("Date filtering:", startDate || endDate ? "ENABLED" : "DISABLED")
+      
+      // Additional debug info for date filtering
+      if (startDate || endDate) {
+        console.log("Sample data dates:", data.slice(0, 5).map(item => Array.isArray(item) ? item[5] : item.date))
+        if (startDate) {
+          const normalizedStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0)
+          console.log("Normalized start date:", normalizedStart)
+        }
+        if (endDate) {
+          const normalizedEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
+          console.log("Normalized end date:", normalizedEnd)
+        }
+      }
       console.log("=== END DEBUG ===")
 
       const exportData = {
