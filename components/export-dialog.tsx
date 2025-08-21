@@ -46,8 +46,44 @@ export function ExportDialog({
   }
 
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
-    // Temporarily disable date filtering to test export functionality
-    return data
+    if (!start && !end) return data
+
+    if (filterByDate) {
+      return filterByDate(data, start!, end!)
+    }
+
+    return data.filter((item) => {
+      let itemDate: Date
+      
+      if (Array.isArray(item)) {
+        // For array format: [status, customer, phone, amount, method, date, ref1, ref2]
+        const dateStr = item[5] // Date is at index 5
+        
+        // Parse date format "31/08/2025" (DD/MM/YYYY)
+        if (dateStr && typeof dateStr === 'string') {
+          const dateParts = dateStr.split('/')
+          if (dateParts.length === 3) {
+            const day = parseInt(dateParts[0], 10)
+            const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
+            const year = parseInt(dateParts[2], 10)
+            itemDate = new Date(year, month, day)
+          } else {
+            itemDate = new Date(dateStr)
+          }
+        } else {
+          return true // Include if date parsing fails
+        }
+      } else {
+        // For object format
+        itemDate = new Date(item.date || item.createdAt || item.timestamp)
+      }
+      
+      if (isNaN(itemDate.getTime())) return true // Include if date parsing fails
+      
+      if (start && itemDate < start) return false
+      if (end && itemDate > end) return false
+      return true
+    })
   }
 
   const calculateFilteredSummary = (filteredData: any[], originalSummary: Record<string, any>) => {
@@ -71,9 +107,20 @@ export function ExportDialog({
     newSummary["Total Transactions"] = filteredData.length.toLocaleString()
 
     const totalAmount = filteredData.reduce((sum, item) => {
-      const amount = typeof item === 'object' && item.amount
-        ? item.amount
-        : (Array.isArray(item) && item[2] ? parseFloat(item[2].replace(/[^\d]/g, '')) || 0 : 0)
+      let amount = 0
+      
+      if (Array.isArray(item)) {
+        // For array format, amount is at index 3 and includes "ETB " prefix and commas
+        const amountStr = item[3] // e.g., "ETB 1,800"
+        if (amountStr && typeof amountStr === 'string') {
+          // Remove "ETB " prefix and commas, then parse
+          amount = parseFloat(amountStr.replace(/ETB\s*/, '').replace(/,/g, '')) || 0
+        }
+      } else {
+        // For object format
+        amount = typeof item.amount === 'number' ? item.amount : 0
+      }
+      
       return sum + amount
     }, 0)
 
@@ -108,11 +155,13 @@ export function ExportDialog({
       console.log("=== EXPORT DEBUG ===")
       console.log("Original data length:", data.length)
       console.log("Original data sample:", data.slice(0, 2))
-      console.log("Filtered data length (no filtering applied):", filteredData.length)
+      console.log("Filtered data length:", filteredData.length)
       console.log("Filtered data sample:", filteredData.slice(0, 2))
       console.log("Headers:", headers)
       console.log("Filtered summary:", filteredSummary)
-      console.log("Date filtering: DISABLED")
+      console.log("Start date:", startDate)
+      console.log("End date:", endDate)
+      console.log("Date filtering:", startDate || endDate ? "ENABLED" : "DISABLED")
       console.log("=== END DEBUG ===")
 
       const exportData = {
