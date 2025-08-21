@@ -213,8 +213,6 @@ export function ExportDialog({
     }
     return undefined;
   }
-  }
-
 
   const handleDownload = () => {
     const filteredData = getFilteredData()
