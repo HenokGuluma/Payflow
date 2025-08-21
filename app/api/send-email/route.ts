@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       text: message,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #10b981;">PayFlow Export Report</h2>
+          <h2 style="color: #10b981;">PayEthio Export Report</h2>
           <p>${message}</p>
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0; color: #6b7280;">
-              This email was sent from PayFlow Dashboard. The report is attached as an HTML file that can be opened in any web browser and printed as PDF.
+              This email was sent from PayEthio Dashboard. The report is attached as an HTML file that can be opened in any web browser and printed as PDF.
             </p>
           </div>
         </div>

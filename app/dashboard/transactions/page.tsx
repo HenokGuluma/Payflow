@@ -378,7 +378,7 @@ export default function TransactionsPage() {
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">AMOUNT</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">PAYMENT METHOD</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">DATE</th>
-                      <th className="px-6 py-4 text-sm font-medium text-muted-foreground">PAYFLOW REFERENCE</th>
+                      <th className="px-6 py-4 text-sm font-medium text-muted-foreground">PAYETHIO REFERENCE</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">BANK REFERENCE</th>
                     </tr>
                   </thead>

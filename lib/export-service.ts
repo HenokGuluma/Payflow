@@ -35,6 +35,24 @@ export class ExportService {
             margin-bottom: 30px; 
             border-bottom: 2px solid #10b981; 
             padding-bottom: 20px; 
+            position: relative;
+          }
+          .logo { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #10b981; 
+            margin-bottom: 10px; 
+          }
+          .watermark {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.1;
+            font-size: 48px;
+            font-weight: bold;
+            color: #10b981;
+            transform: rotate(-15deg);
+            pointer-events: none;
           }
           .title { 
             font-size: 24px; 
@@ -109,6 +127,8 @@ export class ExportService {
       </head>
       <body>
         <div class="header">
+          <div class="watermark">PayEthio</div>
+          <div class="logo">PayEthio Payment Solutions</div>
           <div class="title">${exportData.title}</div>
           ${exportData.startDate && exportData.endDate ? 
             `<div class="date-range">Date Range: ${exportData.startDate} to ${exportData.endDate}</div>` : 

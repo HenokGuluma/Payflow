@@ -273,7 +273,7 @@ export default function WithdrawalsPage() {
               title="Withdrawals Report"
               data={withdrawalHistory}
               headers={["ID", "Amount", "Bank", "Status", "Date", "Reference"]}
-              filename="payflow-withdrawals.pdf"
+              filename="payethio-withdrawals.pdf"
               summary={{
                 "Total Withdrawals": withdrawalHistory.length.toLocaleString(),
                 "Total Withdrawn": `ETB ${totalWithdrawn.toLocaleString()}`,

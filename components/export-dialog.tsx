@@ -19,9 +19,18 @@ interface ExportDialogProps {
   data: any[]
   summary?: Record<string, any>
   children: React.ReactNode
+  filterByDate?: (data: any[], startDate: Date, endDate: Date) => any[]
+  formatDataForExport?: (data: any[]) => any[][]
 }
 
-export function ExportDialog({ title, data, summary = {}, children }: ExportDialogProps) {
+export function ExportDialog({ 
+  title, 
+  data, 
+  summary = {}, 
+  children, 
+  filterByDate,
+  formatDataForExport 
+}: ExportDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [startDate, setStartDate] = useState<Date>()
   const [endDate, setEndDate] = useState<Date>()
@@ -33,6 +42,10 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
     if (!start && !end) return data
 
+    if (filterByDate) {
+      return filterByDate(data, start!, end!)
+    }
+
     return data.filter((item) => {
       const itemDate = new Date(item.date || item.createdAt || item.timestamp)
       if (start && itemDate < start) return false
@@ -43,37 +56,36 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
 
   const calculateFilteredSummary = (filteredData: any[], originalSummary: Record<string, any>) => {
     if (!filteredData.length) {
-      return {
-        totalTransactions: 0,
-        totalAmount: 0,
-        ...Object.keys(originalSummary).reduce((acc, key) => {
-          if (!key.toLowerCase().includes('total')) {
-            acc[key] = originalSummary[key]
-          } else if (key.toLowerCase().includes('transaction')) {
-            acc[key] = 0
-          } else if (key.toLowerCase().includes('amount')) {
-            acc[key] = 0
-          }
-          return acc
-        }, {} as Record<string, any>)
-      }
+      const newSummary: Record<string, any> = {}
+      Object.keys(originalSummary).forEach(key => {
+        if (key.toLowerCase().includes('total') && key.toLowerCase().includes('transaction')) {
+          newSummary[key] = 0
+        } else if (key.toLowerCase().includes('total') && key.toLowerCase().includes('amount')) {
+          newSummary[key] = "ETB 0"
+        } else {
+          newSummary[key] = originalSummary[key]
+        }
+      })
+      return newSummary
     }
 
     const newSummary: Record<string, any> = {}
 
-    // Calculate transaction count
-    newSummary.totalTransactions = filteredData.length
-
-    // Calculate total amount
+    // Calculate filtered metrics
+    newSummary["Total Transactions"] = filteredData.length.toLocaleString()
+    
     const totalAmount = filteredData.reduce((sum, item) => {
-      const amount = item.amount || item.value || item.total || 0
-      return sum + (typeof amount === 'string' ? parseFloat(amount) || 0 : amount)
+      const amount = typeof item === 'object' && item.amount 
+        ? item.amount 
+        : (Array.isArray(item) && item[2] ? parseFloat(item[2].replace(/[^\d]/g, '')) || 0 : 0)
+      return sum + amount
     }, 0)
-    newSummary.totalAmount = totalAmount
+    
+    newSummary["Total Amount"] = `ETB ${totalAmount.toLocaleString()}`
 
-    // Copy other summary fields that might not be amount-related
+    // Copy other summary fields
     Object.keys(originalSummary).forEach(key => {
-      if (!key.toLowerCase().includes('total') ||
+      if (!key.toLowerCase().includes('total') || 
           (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
         newSummary[key] = originalSummary[key]
       }
@@ -87,17 +99,17 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
       setIsLoading(true)
       
       const filteredData = filterDataByDateRange(data, startDate, endDate)
+      const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
       
-      // Extract headers from the first data item or use default headers
-      const headers = filteredData.length > 0 
-        ? Object.keys(filteredData[0])
-        : ['Date', 'Amount', 'Description']
+      const headers = processedData.length > 0 && Array.isArray(processedData[0])
+        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
+        : Object.keys(processedData[0] || {})
       
       const exportData = {
         title,
         headers,
-        data: filteredData,
+        data: processedData,
         summary: filteredSummary,
         startDate: startDate?.toLocaleDateString(),
         endDate: endDate?.toLocaleDateString(),
@@ -119,17 +131,17 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
       setIsLoading(true)
       
       const filteredData = filterDataByDateRange(data, startDate, endDate)
+      const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
       
-      // Extract headers from the first data item or use default headers
-      const headers = filteredData.length > 0 
-        ? Object.keys(filteredData[0])
-        : ['Date', 'Amount', 'Description']
+      const headers = processedData.length > 0 && Array.isArray(processedData[0])
+        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
+        : Object.keys(processedData[0] || {})
       
       const exportData = {
         title,
         headers,
-        data: filteredData,
+        data: processedData,
         summary: filteredSummary,
         startDate: startDate?.toLocaleDateString(),
         endDate: endDate?.toLocaleDateString(),
@@ -148,7 +160,6 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
         setIsOpen(false)
         setEmail("")
         setEmailMessage("")
-        // You could add a toast notification here
       }
     } catch (error) {
       console.error("Email sending failed:", error)
@@ -272,7 +283,7 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-4">
-            <Button onClick={handleDownload} className="flex-1">
+            <Button onClick={handleDownload} className="flex-1" disabled={isLoading}>
               <Download className="w-4 h-4 mr-2" />
               Export & Print
             </Button>
