@@ -40,9 +40,11 @@ export function ExportDialog({
   const [isExporting, setIsExporting] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
 
-  // Placeholder for the actual data that will be exported
-  const exportData = data;
-  const processedSummary = summary; // Assuming summary is already processed or doesn't need date filtering
+  // Get the current filtered data for email content generation
+  const getCurrentExportData = () => {
+    const filteredData = filterDataByDateRange(data, startDate, endDate)
+    return formatDataForExport ? formatDataForExport(filteredData) : filteredData
+  }
 
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
     if (!start && !end) return data
@@ -107,6 +109,10 @@ export function ExportDialog({
       const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
 
+      console.log("Filtered data:", filteredData)
+      console.log("Processed data:", processedData)
+      console.log("Filtered summary:", filteredSummary)
+
       const headers = processedData.length > 0 && Array.isArray(processedData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
         : Object.keys(processedData[0] || {})
@@ -138,6 +144,9 @@ export function ExportDialog({
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
+
+      console.log("Email - Filtered data:", filteredData)
+      console.log("Email - Processed data:", processedData)
 
       const headers = processedData.length > 0 && Array.isArray(processedData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
@@ -173,14 +182,18 @@ export function ExportDialog({
     }
   }
 
-  // Placeholder function for generating email content
+  // Generate email content with actual filtered data
   const generateEmailContent = () => {
+    const currentExportData = getCurrentExportData()
+    const filteredData = filterDataByDateRange(data, startDate, endDate)
+    const currentSummary = calculateFilteredSummary(filteredData, summary)
+    
     return `
       <h1>${title} Report</h1>
       <p>Date Range: ${startDate && endDate ? `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}` : 'All Time'}</p>
       <h2>Summary:</h2>
       <ul>
-        ${Object.entries(processedSummary).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
+        ${Object.entries(currentSummary).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
       </ul>
       <h2>Transactions:</h2>
       <table>
@@ -197,16 +210,16 @@ export function ExportDialog({
           </tr>
         </thead>
         <tbody>
-          ${Array.isArray(exportData) ? exportData.map((item: any) => `
+          ${Array.isArray(currentExportData) ? currentExportData.map((item: any) => `
             <tr>
-              <td>${item.status || ''}</td>
-              <td>${item.customerName || ''}</td>
-              <td>${item.customerPhone || ''}</td>
-              <td>${item.amount ? `ETB ${item.amount.toLocaleString()}` : ''}</td>
-              <td>${item.paymentMethod || ''}</td>
-              <td>${item.date || ''}</td>
-              <td>${item.payEthioReference || ''}</td>
-              <td>${item.bankReference || ''}</td>
+              <td>${Array.isArray(item) ? item[0] || '' : item.status || ''}</td>
+              <td>${Array.isArray(item) ? item[1] || '' : item.customerName || ''}</td>
+              <td>${Array.isArray(item) ? item[2] || '' : item.customerPhone || ''}</td>
+              <td>${Array.isArray(item) ? item[3] || '' : (item.amount ? `ETB ${item.amount.toLocaleString()}` : '')}</td>
+              <td>${Array.isArray(item) ? item[4] || '' : item.paymentMethod || ''}</td>
+              <td>${Array.isArray(item) ? item[5] || '' : item.date || ''}</td>
+              <td>${Array.isArray(item) ? item[6] || '' : item.payEthioReference || ''}</td>
+              <td>${Array.isArray(item) ? item[7] || '' : item.bankReference || ''}</td>
             </tr>
           `).join('') : ''}
         </tbody>
