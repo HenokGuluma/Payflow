@@ -122,16 +122,16 @@ const generateTransactions = (userType: string) => {
     })
   }
 
-  // Define monthly distribution matching revenue data - exponential growth pattern
+  // Define monthly distribution - exponential growth pattern totaling 54,255 transactions
   const monthlyDistribution = [
-    { month: "Jan", transactions: 1200, revenue: 180000, averageAmount: 150 },
-    { month: "Feb", transactions: 1300, revenue: 195000, averageAmount: 150 },
-    { month: "Mar", transactions: 1400, revenue: 210000, averageAmount: 150 },
-    { month: "Apr", transactions: 1500, revenue: 225000, averageAmount: 150 },
-    { month: "May", transactions: 5667, revenue: 850000, averageAmount: 150 },
-    { month: "Jun", transactions: 16000, revenue: 2400000, averageAmount: 150 },
-    { month: "Jul", transactions: 39333, revenue: 5900000, averageAmount: 150 },
-    { month: "Aug", transactions: 61333, revenue: 9200000, averageAmount: 150 },
+    { month: "Jan", transactions: 800, revenue: 120000, averageAmount: 150 },
+    { month: "Feb", transactions: 900, revenue: 135000, averageAmount: 150 },
+    { month: "Mar", transactions: 1000, revenue: 150000, averageAmount: 150 },
+    { month: "Apr", transactions: 1100, revenue: 165000, averageAmount: 150 },
+    { month: "May", transactions: 3800, revenue: 570000, averageAmount: 150 },
+    { month: "Jun", transactions: 10700, revenue: 1605000, averageAmount: 150 },
+    { month: "Jul", transactions: 16500, revenue: 2475000, averageAmount: 150 },
+    { month: "Aug", transactions: 19455, revenue: 2918250, averageAmount: 150 },
   ]
 
   const transactions = []
@@ -151,15 +151,28 @@ const generateTransactions = (userType: string) => {
         monthDate.getTime() + Math.random() * (nextMonthDate.getTime() - monthDate.getTime())
       )
 
-      // Calculate amount based on average for the month with some variation
-      const baseAmount = monthData.averageAmount
-      const variation = 0.3 // 30% variation
-      const minAmount = Math.floor(baseAmount * (1 - variation))
-      const maxAmount = Math.floor(baseAmount * (1 + variation))
-      const amount = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount
+      // Generate varied transaction amounts (50-2000 ETB, mostly even numbers)
+      let amount
+      const random = Math.random()
+      
+      if (random < 0.6) {
+        // 60% - Small amounts (50-500 ETB)
+        const evenAmounts = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+        const oddAmounts = [75, 125, 175, 225, 275, 325, 375, 425, 475]
+        amount = random < 0.05 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+      } else if (random < 0.85) {
+        // 25% - Medium amounts (500-1000 ETB)
+        const evenAmounts = [500, 600, 700, 800, 900, 1000]
+        const oddAmounts = [525, 575, 625, 675, 725, 775, 825, 875, 925]
+        amount = random < 0.1 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+      } else {
+        // 15% - Large amounts (1000-2000 ETB)
+        const evenAmounts = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000]
+        const oddAmounts = [1050, 1150, 1250, 1350, 1450, 1550, 1650, 1750, 1850, 1950]
+        amount = random < 0.15 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+      }
 
-      // Round to nearest 25 to keep amounts even
-      const roundedAmount = Math.round(amount / 25) * 25
+      const roundedAmount = amount
 
       const chapaRef = `AP${Math.random().toString(36).substring(2, 12)}`
       const bankRef = `CAR${Math.random().toString(36).substring(2, 8).toUpperCase()}`
