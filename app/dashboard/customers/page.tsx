@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Filter, Download, Mail, Phone, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ExportDialog } from "@/components/export-dialog"
 
 // Generate comprehensive customer data
 const generateCustomers = (userType: string) => {
@@ -181,46 +182,23 @@ export default function CustomersPage() {
   const totalRevenue = userType === "registered" ? 0 : 16823567
   const avgCustomerValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0
 
-  const handleExport = () => {
-    import("jspdf").then(({ default: jsPDF }) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF()
-
-        // Add title
-        doc.setFontSize(20)
-        doc.text("PayFlow Customers Report", 20, 20)
-
-        // Add summary
-        doc.setFontSize(12)
-        doc.text(`Total Customers: ${totalCustomers.toLocaleString()}`, 20, 35)
-        doc.text(`Active Customers: ${activeCustomers.toLocaleString()}`, 20, 45)
-        doc.text(`Total Revenue: ETB ${totalRevenue.toLocaleString()}`, 20, 55)
-        doc.text(`Avg Customer Value: ETB ${avgCustomerValue.toFixed(0)}`, 20, 65)
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 75)
-
-        // Prepare table data
-        const tableData = filteredCustomers.map((c) => [
-          c.fullName,
-          c.email,
-          c.phone,
-          c.status,
-          `ETB ${c.totalSpent.toLocaleString()}`,
-          c.transactionCount.toString(),
-          c.joinDate.toLocaleDateString(),
-        ])
-
-        // Add table
-        ;(doc as any).autoTable({
-          head: [["Name", "Email", "Phone", "Status", "Total Spent", "Transactions", "Join Date"]],
-          body: tableData,
-          startY: 85,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] },
-        })
-
-        doc.save("payflow-customers.pdf")
-      })
+  const filterCustomersByDate = (data: any[], startDate: Date, endDate: Date) => {
+    return data.filter((customer) => {
+      const joinDate = new Date(customer.joinDate)
+      return joinDate >= startDate && joinDate <= endDate
     })
+  }
+
+  const formatCustomersForExport = (data: any[]) => {
+    return data.map((c) => [
+      c.fullName,
+      c.email,
+      c.phone,
+      c.status,
+      `ETB ${c.totalSpent.toLocaleString()}`,
+      c.transactionCount.toString(),
+      c.joinDate.toLocaleDateString(),
+    ])
   }
 
   const getRiskBadgeColor = (risk: string) => {
@@ -334,10 +312,25 @@ export default function CustomersPage() {
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <ExportDialog
+                title="Customers Report"
+                data={filteredCustomers}
+                headers={["Name", "Email", "Phone", "Status", "Total Spent", "Transactions", "Join Date"]}
+                filename="payflow-customers.pdf"
+                summary={{
+                  "Total Customers": totalCustomers.toLocaleString(),
+                  "Active Customers": activeCustomers.toLocaleString(),
+                  "Total Revenue": `ETB ${totalRevenue.toLocaleString()}`,
+                  "Avg Customer Value": `ETB ${avgCustomerValue.toFixed(0)}`
+                }}
+                filterByDate={filterCustomersByDate}
+                formatDataForExport={formatCustomersForExport}
+              >
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </ExportDialog>
             </div>
           </div>
         </CardContent>

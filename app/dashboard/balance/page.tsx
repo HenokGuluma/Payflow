@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowUpRight, Wallet, TrendingUp, Download } from "lucide-react"
+import { ExportDialog } from "@/components/export-dialog"
 import {
   LineChart,
   Line,
@@ -116,42 +117,13 @@ export default function BalancePage() {
   const totalBalance = currentBalanceBreakdown.reduce((sum, item) => sum + item.value, 0)
   const availableBalance = currentBalanceBreakdown.find((item) => item.name === "Available")?.value || 0
 
-  const handleExport = () => {
-    import("jspdf").then(({ default: jsPDF }) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF()
-
-        // Add title
-        doc.setFontSize(20)
-        doc.text("PayFlow Balance Changes Report", 20, 20)
-
-        // Add summary
-        doc.setFontSize(12)
-        doc.text(`Total Balance: ETB ${totalBalance.toLocaleString()}`, 20, 35)
-        doc.text(`Available Balance: ETB ${availableBalance.toLocaleString()}`, 20, 45)
-        doc.text(`Total Changes: ${currentRecentTransactions.length}`, 20, 55)
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 65)
-
-        // Prepare table data
-        const tableData = currentRecentTransactions.map((t) => [
-          t.type === "credit" ? "Credit" : "Debit",
-          t.description,
-          `ETB ${(t.type === "credit" ? t.amount : -t.amount).toLocaleString()}`,
-          t.date,
-        ])
-
-        // Add table
-        ;(doc as any).autoTable({
-          head: [["Type", "Description", "Amount", "Date"]],
-          body: tableData,
-          startY: 75,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] },
-        })
-
-        doc.save("payflow-balance-changes.pdf")
-      })
-    })
+  const formatBalanceChangesForExport = (data: any[]) => {
+    return data.map((t) => [
+      t.type === "credit" ? "Credit" : "Debit",
+      t.description,
+      `ETB ${(t.type === "credit" ? t.amount : -t.amount).toLocaleString()}`,
+      t.date,
+    ])
   }
 
   const formatYAxis = (value: number) => {
@@ -299,10 +271,23 @@ export default function BalancePage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Balance Changes ({currentRecentTransactions.length} items)</CardTitle>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={userType === "registered"}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportDialog
+            title="Balance Changes Report"
+            data={currentRecentTransactions}
+            headers={["Type", "Description", "Amount", "Date"]}
+            filename="payflow-balance-changes.pdf"
+            summary={{
+              "Total Balance": `ETB ${totalBalance.toLocaleString()}`,
+              "Available Balance": `ETB ${availableBalance.toLocaleString()}`,
+              "Total Changes": currentRecentTransactions.length.toString()
+            }}
+            formatDataForExport={formatBalanceChangesForExport}
+          >
+            <Button variant="outline" size="sm" disabled={userType === "registered"}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </ExportDialog>
         </CardHeader>
         <CardContent>
           <div className="space-y-4 max-h-96 overflow-y-auto">

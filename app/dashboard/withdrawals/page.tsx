@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowDownToLine, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download } from "lucide-react"
+import { ExportDialog } from "@/components/export-dialog"
 
 const generateWithdrawalHistory = (userType: string) => {
   // Return empty array for new registered users
@@ -131,44 +132,22 @@ export default function WithdrawalsPage() {
   const endIndex = startIndex + itemsPerPage
   const currentWithdrawals = withdrawalHistory.slice(startIndex, endIndex)
 
-  const handleExport = () => {
-    import("jspdf").then(({ default: jsPDF }) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF()
-
-        // Add title
-        doc.setFontSize(20)
-        doc.text("PayFlow Withdrawals Report", 20, 20)
-
-        // Add summary
-        doc.setFontSize(12)
-        doc.text(`Total Withdrawals: ${withdrawalHistory.length.toLocaleString()}`, 20, 35)
-        doc.text(`Total Withdrawn: ETB ${totalWithdrawn.toLocaleString()}`, 20, 45)
-        doc.text(`Pending Amount: ETB ${pendingAmount.toLocaleString()}`, 20, 55)
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 65)
-
-        // Prepare table data
-        const tableData = withdrawalHistory.map((w) => [
-          w.id,
-          `ETB ${w.amount.toLocaleString()}`,
-          w.bank,
-          w.status,
-          w.date,
-          w.reference,
-        ])
-
-        // Add table
-        ;(doc as any).autoTable({
-          head: [["ID", "Amount", "Bank", "Status", "Date", "Reference"]],
-          body: tableData,
-          startY: 75,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] },
-        })
-
-        doc.save("payflow-withdrawals.pdf")
-      })
+  const filterWithdrawalsByDate = (data: any[], startDate: Date, endDate: Date) => {
+    return data.filter((withdrawal) => {
+      const withdrawalDate = new Date(withdrawal.date)
+      return withdrawalDate >= startDate && withdrawalDate <= endDate
     })
+  }
+
+  const formatWithdrawalsForExport = (data: any[]) => {
+    return data.map((w) => [
+      w.id,
+      `ETB ${w.amount.toLocaleString()}`,
+      w.bank,
+      w.status,
+      w.date,
+      w.reference,
+    ])
   }
 
   return (
@@ -272,10 +251,24 @@ export default function WithdrawalsPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Withdrawal History ({withdrawalHistory.length.toLocaleString()} total records)</CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+            <ExportDialog
+              title="Withdrawals Report"
+              data={withdrawalHistory}
+              headers={["ID", "Amount", "Bank", "Status", "Date", "Reference"]}
+              filename="payflow-withdrawals.pdf"
+              summary={{
+                "Total Withdrawals": withdrawalHistory.length.toLocaleString(),
+                "Total Withdrawn": `ETB ${totalWithdrawn.toLocaleString()}`,
+                "Pending Amount": `ETB ${pendingAmount.toLocaleString()}`
+              }}
+              filterByDate={filterWithdrawalsByDate}
+              formatDataForExport={formatWithdrawalsForExport}
+            >
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </ExportDialog>
             <span className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </span>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Download, Copy } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
+import { ExportDialog } from "@/components/export-dialog"
 
 const generateTransactions = (userType: string) => {
   // Return empty array for new registered users
@@ -229,45 +230,24 @@ export default function TransactionsPage() {
 
   const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0)
 
-  const handleExport = () => {
-    import("jspdf").then(({ default: jsPDF }) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF()
-
-        // Add title
-        doc.setFontSize(20)
-        doc.text("PayFlow Transactions Report", 20, 20)
-
-        // Add summary
-        doc.setFontSize(12)
-        doc.text(`Total Transactions: ${filteredTransactions.length.toLocaleString()}`, 20, 35)
-        doc.text(`Total Amount: ETB ${totalAmount.toLocaleString()}`, 20, 45)
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 55)
-
-        // Prepare table data
-        const tableData = filteredTransactions.map((t) => [
-          t.status,
-          t.customer,
-          t.phone,
-          `ETB ${t.amount.toLocaleString()}`,
-          t.paymentMethod,
-          t.chapaReference,
-          t.bankReference,
-          new Date(t.timestamp).toLocaleDateString(),
-        ])
-
-        // Add table
-        ;(doc as any).autoTable({
-          head: [["Status", "Customer", "Phone", "Amount", "Payment", "PayFlow Ref", "Bank Ref", "Date"]],
-          body: tableData,
-          startY: 65,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] },
-        })
-
-        doc.save("payflow-transactions.pdf")
-      })
+  const filterTransactionsByDate = (data: any[], startDate: Date, endDate: Date) => {
+    return data.filter((transaction) => {
+      const transactionDate = new Date(transaction.timestamp)
+      return transactionDate >= startDate && transactionDate <= endDate
     })
+  }
+
+  const formatTransactionsForExport = (data: any[]) => {
+    return data.map((t) => [
+      t.status,
+      t.customer,
+      t.phone,
+      `ETB ${t.amount.toLocaleString()}`,
+      t.paymentMethod,
+      t.chapaReference,
+      t.bankReference,
+      new Date(t.timestamp).toLocaleDateString(),
+    ])
   }
 
   const copyToClipboard = (text: string) => {
@@ -328,10 +308,23 @@ export default function TransactionsPage() {
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <ExportDialog
+                title="Transactions Report"
+                data={filteredTransactions}
+                headers={["Status", "Customer", "Phone", "Amount", "Payment", "PayFlow Ref", "Bank Ref", "Date"]}
+                filename="payflow-transactions.pdf"
+                summary={{
+                  "Total Transactions": filteredTransactions.length.toLocaleString(),
+                  "Total Amount": `ETB ${totalAmount.toLocaleString()}`
+                }}
+                filterByDate={filterTransactionsByDate}
+                formatDataForExport={formatTransactionsForExport}
+              >
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </ExportDialog>
             </div>
           </div>
         </CardContent>
