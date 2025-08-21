@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, Copy } from "lucide-react"
+import { Search, Filter, Download, Copy, Calendar as CalendarIcon } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { ExportDialog } from "@/components/export-dialog"
 import { ProgressSimulator } from "@/lib/progress-simulator"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 const generateTransactions = (userType: string) => {
   // Return empty array for new registered users
@@ -203,6 +207,9 @@ export default function TransactionsPage() {
   const [filterField, setFilterField] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [progressData, setProgressData] = useState({ transactions: 54234 })
+  const [startDate, setStartDate] = useState<Date>()
+  const [endDate, setEndDate] = useState<Date>()
+  const [showDateFilter, setShowDateFilter] = useState(false)
   const itemsPerPage = 20
 
   useEffect(() => {
@@ -219,6 +226,22 @@ export default function TransactionsPage() {
   }, [])
 
   const filteredTransactions = transactions.filter((transaction) => {
+    // Date filtering
+    if (startDate || endDate) {
+      const transactionDate = new Date(transaction.timestamp)
+      
+      if (startDate) {
+        const startOfDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0)
+        if (transactionDate < startOfDay) return false
+      }
+      
+      if (endDate) {
+        const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
+        if (transactionDate > endOfDay) return false
+      }
+    }
+
+    // Search filtering
     if (!searchQuery) return true
 
     const query = searchQuery.toLowerCase()
@@ -252,7 +275,7 @@ export default function TransactionsPage() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage)
 
-  const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0)
+  const totalAmount = filteredTransactions.reduce((sum, t) => sum + t.amount, 0)
 
   const filterTransactionsByDate = (data: any[], startDate: Date, endDate: Date) => {
     return data.filter((transaction) => {
@@ -328,7 +351,12 @@ export default function TransactionsPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowDateFilter(!showDateFilter)}
+                className={cn(showDateFilter && "bg-muted")}
+              >
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
@@ -351,6 +379,83 @@ export default function TransactionsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Date Filter Controls */}
+      {showDateFilter && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="flex gap-2 items-center">
+                <span className="text-sm font-medium">Filter by date:</span>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal w-[140px]",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "MMM d") : "Start date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal w-[140px]",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, "MMM d") : "End date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setStartDate(undefined)
+                    setEndDate(undefined)
+                  }}
+                  disabled={!startDate && !endDate}
+                >
+                  Clear
+                </Button>
+              </div>
+
+              {(startDate || endDate) && (
+                <div className="text-sm text-muted-foreground">
+                  Showing {filteredTransactions.length.toLocaleString()} of {transactions.length.toLocaleString()} transactions
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Transactions Table */}
       <Card>

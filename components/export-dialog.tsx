@@ -48,42 +48,45 @@ export function ExportDialog({
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
     if (!start && !end) return data
 
-    if (filterByDate) {
+    if (filterByDate && !Array.isArray(data[0])) {
+      // For object format, use the provided filterByDate function
       return filterByDate(data, start!, end!)
     }
 
     return data.filter((item) => {
-      let itemDateStr: string
+      let itemDate: Date
       
       if (Array.isArray(item)) {
         // For array format: [status, customer, phone, amount, method, date, ref1, ref2]
-        itemDateStr = item[5] // Date is at index 5
+        const itemDateStr = item[5] // Date is at index 5
+        
+        if (!itemDateStr || typeof itemDateStr !== 'string') {
+          return true // Include if date parsing fails
+        }
+
+        // Parse date format "31/08/2025" (DD/MM/YYYY)
+        const dateParts = itemDateStr.split('/')
+        if (dateParts.length !== 3) {
+          return true // Include if date format is unexpected
+        }
+
+        const day = parseInt(dateParts[0], 10)
+        const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
+        const year = parseInt(dateParts[2], 10)
+        
+        if (isNaN(day) || isNaN(month) || isNaN(year)) {
+          return true // Include if date parsing fails
+        }
+
+        // Create date at start of day in local timezone
+        itemDate = new Date(year, month, day, 0, 0, 0, 0)
       } else {
-        // For object format, convert to date string
-        const date = new Date(item.date || item.createdAt || item.timestamp)
-        itemDateStr = date.toLocaleDateString('en-GB') // DD/MM/YYYY format
+        // For object format
+        itemDate = new Date(item.date || item.createdAt || item.timestamp)
+        if (isNaN(itemDate.getTime())) {
+          return true // Include if date parsing fails
+        }
       }
-      
-      if (!itemDateStr || typeof itemDateStr !== 'string') {
-        return true // Include if date parsing fails
-      }
-
-      // Parse date format "31/08/2025" (DD/MM/YYYY)
-      const dateParts = itemDateStr.split('/')
-      if (dateParts.length !== 3) {
-        return true // Include if date format is unexpected
-      }
-
-      const day = parseInt(dateParts[0], 10)
-      const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
-      const year = parseInt(dateParts[2], 10)
-      
-      if (isNaN(day) || isNaN(month) || isNaN(year)) {
-        return true // Include if date parsing fails
-      }
-
-      // Create date at start of day in local timezone
-      const itemDate = new Date(year, month, day, 0, 0, 0, 0)
       
       // Convert filter dates to start/end of day for proper comparison
       if (start) {
@@ -179,7 +182,7 @@ export function ExportDialog({
       
       // Additional debug info for date filtering
       if (startDate || endDate) {
-        console.log("Sample data dates:", data.slice(0, 5).map(item => Array.isArray(item) ? item[5] : item.date))
+        console.log("Sample data dates:", data.slice(0, 3).map(item => Array.isArray(item) ? item[5] : item.date))
         
         // Test the filtering logic with sample data
         const sampleItem = data[0]
@@ -194,16 +197,18 @@ export function ExportDialog({
               const month = parseInt(dateParts[1], 10) - 1
               const year = parseInt(dateParts[2], 10)
               const sampleDate = new Date(year, month, day, 0, 0, 0, 0)
-              console.log("Parsed sample date:", sampleDate.toLocaleDateString('en-GB'))
+              console.log("Parsed sample date:", sampleDate.toLocaleDateString('en-GB'), "->", sampleDate.toISOString())
               
               if (startDate) {
                 const startOfDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0)
-                console.log("Start comparison:", sampleDate >= startOfDay, sampleDate.toISOString(), "vs", startOfDay.toISOString())
+                console.log("Start filter:", startOfDay.toLocaleDateString('en-GB'), "->", startOfDay.toISOString())
+                console.log("Start comparison: item >= start?", sampleDate >= startOfDay)
               }
               
               if (endDate) {
                 const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
-                console.log("End comparison:", sampleDate <= endOfDay, sampleDate.toISOString(), "vs", endOfDay.toISOString())
+                console.log("End filter:", endOfDay.toLocaleDateString('en-GB'), "->", endOfDay.toISOString())
+                console.log("End comparison: item <= end?", sampleDate <= endOfDay)
               }
             }
           }
