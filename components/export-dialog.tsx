@@ -1,195 +1,149 @@
+
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon, Download, FileText, Mail, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Download, Mail, Loader2, FileText } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { ExportService, ExportData, EmailOptions } from "@/lib/export-service"
+import { Textarea } from "@/components/ui/textarea"
+import { ExportService } from "@/lib/export-service"
 
 interface ExportDialogProps {
   title: string
   data: any[]
-  headers: string[]
-  filename: string
-  summary?: { [key: string]: any }
+  summary?: Record<string, any>
   children: React.ReactNode
-  filterByDate?: (data: any[], startDate: Date, endDate: Date) => any[]
-  formatDataForExport?: (data: any[]) => any[]
 }
 
-export function ExportDialog({
-  title,
-  data,
-  headers,
-  filename,
-  summary,
-  children,
-  filterByDate,
-  formatDataForExport
-}: ExportDialogProps) {
+export function ExportDialog({ title, data, summary = {}, children }: ExportDialogProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const [startDate, setStartDate] = useState<Date>()
   const [endDate, setEndDate] = useState<Date>()
   const [email, setEmail] = useState("")
-  const [emailSubject, setEmailSubject] = useState(`${title} Export`)
+  const [emailSubject, setEmailSubject] = useState(`${title} Export Report`)
   const [emailMessage, setEmailMessage] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const getFilteredData = () => {
-    let filteredData = data
+  const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
+    if (!start && !end) return data
 
-    if (startDate && endDate && filterByDate) {
-      filteredData = filterByDate(data, startDate, endDate)
-    }
-
-    if (formatDataForExport) {
-      return formatDataForExport(filteredData)
-    }
-
-    return filteredData
+    return data.filter((item) => {
+      const itemDate = new Date(item.date || item.createdAt || item.timestamp)
+      if (start && itemDate < start) return false
+      if (end && itemDate > end) return false
+      return true
+    })
   }
 
-  const getFilteredSummary = () => {
-    if (!summary) return undefined;
+  const calculateFilteredSummary = (filteredData: any[], originalSummary: Record<string, any>) => {
+    if (!filteredData.length) {
+      return {
+        totalTransactions: 0,
+        totalAmount: 0,
+        ...Object.keys(originalSummary).reduce((acc, key) => {
+          if (!key.toLowerCase().includes('total')) {
+            acc[key] = originalSummary[key]
+          } else if (key.toLowerCase().includes('transaction')) {
+            acc[key] = 0
+          } else if (key.toLowerCase().includes('amount')) {
+            acc[key] = 0
+          }
+          return acc
+        }, {} as Record<string, any>)
+      }
+    }
 
-    const filteredData = getFilteredData();
+    const newSummary: Record<string, any> = {}
 
-    if (startDate && endDate && filterByDate) {
-      // Recalculate summary based on filtered data
-      const newSummary: { [key: string]: any } = {};
+    // Calculate transaction count
+    newSummary.totalTransactions = filteredData.length
 
-      // Calculate total transactions from filtered data
-      newSummary["Total Transactions"] = filteredData.length.toLocaleString();
+    // Calculate total amount
+    const totalAmount = filteredData.reduce((sum, item) => {
+      const amount = item.amount || item.value || item.total || 0
+      return sum + (typeof amount === 'string' ? parseFloat(amount) || 0 : amount)
+    }, 0)
+    newSummary.totalAmount = totalAmount
 
-      // Calculate total amount from filtered data
-      // Try to determine amount field from the data structure
-      let totalAmount = 0;
-      if (filteredData.length > 0) {
-        const sampleRow = filteredData[0];
+    // Copy other summary fields that might not be amount-related
+    Object.keys(originalSummary).forEach(key => {
+      if (!key.toLowerCase().includes('total') ||
+          (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
+        newSummary[key] = originalSummary[key]
+      }
+    })
 
-        // Check if data is array format (from formatDataForExport)
-        if (Array.isArray(sampleRow)) {
-          // For transactions: amount is typically at index 3 (after status, customer, phone)
-          // For balance changes: amount is at index 2 (after type, description)
-          // For withdrawals: amount is at index 1 (after ID)
+    return newSummary
+  }
 
-          // Try to find amount column by looking for ETB values
-          filteredData.forEach(row => {
-            if (Array.isArray(row)) {
-              for (let i = 0; i < row.length; i++) {
-                const cell = row[i];
-                if (typeof cell === 'string' && cell.includes('ETB')) {
-                  const amountStr = cell.replace('ETB ', '').replace(/,/g, '');
-                  const amount = parseFloat(amountStr);
-                  if (!isNaN(amount)) {
-                    totalAmount += Math.abs(amount); // Use absolute value for debits
-                  }
-                  break; // Found amount column, move to next row
-                }
-              }
-            }
-          });
-        } else {
-          // Object format - try common amount field names
-          filteredData.forEach(item => {
-            const amount = item.amount || item.totalSpent || item.value || 0;
-            if (typeof amount === 'number') {
-              totalAmount += Math.abs(amount);
-            }
-          });
-        }
+  const handleDownload = async () => {
+    try {
+      setIsLoading(true)
+      
+      const filteredData = filterDataByDateRange(data, startDate, endDate)
+      const filteredSummary = calculateFilteredSummary(filteredData, summary)
+      
+      const exportData = {
+        title,
+        data: filteredData,
+        summary: filteredSummary,
+        dateRange: {
+          start: startDate?.toISOString(),
+          end: endDate?.toISOString(),
+        },
       }
 
-      newSummary["Total Amount"] = `ETB ${totalAmount.toLocaleString()}`;
-
-      // Copy other summary fields that might not be amount-related
-      Object.keys(summary).forEach(key => {
-        if (!key.toLowerCase().includes('total') ||
-            (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
-          newSummary[key] = summary[key];
-        }
-      });
-
-      return newSummary;
+      const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`
+      await ExportService.exportToPDF(exportData, filename)
+    } catch (error) {
+      console.error("Export failed:", error)
+    } finally {
+      setIsLoading(false)
     }
-
-    return summary;
-  }
-
-  const handleDownload = () => {
-    const filteredData = getFilteredData()
-
-    const exportData: ExportData = {
-      title,
-      headers,
-      data: filteredData,
-      summary: getFilteredSummary(), // Use filtered summary
-      startDate: startDate?.toLocaleDateString(),
-      endDate: endDate?.toLocaleDateString(),
-    }
-
-    ExportService.downloadPDF(exportData, filename)
   }
 
   const handleEmailSend = async () => {
-    if (!email.trim()) {
-      alert("Please enter an email address")
-      return
-    }
+    if (!email) return
 
-    setIsLoading(true)
     try {
-      const filteredData = getFilteredData()
-
-      const exportData: ExportData = {
+      setIsLoading(true)
+      
+      const filteredData = filterDataByDateRange(data, startDate, endDate)
+      const filteredSummary = calculateFilteredSummary(filteredData, summary)
+      
+      const exportData = {
         title,
-        headers,
         data: filteredData,
-        summary: getFilteredSummary(), // Use filtered summary
-        startDate: startDate?.toLocaleDateString(),
-        endDate: endDate?.toLocaleDateString(),
+        summary: filteredSummary,
+        dateRange: {
+          start: startDate?.toISOString(),
+          end: endDate?.toISOString(),
+        },
       }
 
-      const emailOptions: EmailOptions = {
+      const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`
+      const emailOptions = {
         to: email,
-        subject: emailSubject || `${title} Export`,
+        subject: emailSubject,
         message: emailMessage || `Please find attached the ${title} report.`,
       }
 
-      // The email sending logic itself is within ExportService.sendEmail.
-      // The primary fix here is ensuring the data passed to it is correct,
-      // and addressing potential environment variable issues if they were the cause.
-      // Assuming `ExportService` handles the actual sending and has access to necessary config.
-      // If there were environment variable issues, those would be fixed outside this component's scope.
-      // The prompt mentions "I am still not getting the email, fix that".
-      // This implies a potential issue in the `ExportService` or its configuration.
-      // Since we don't have the `ExportService` code, we can only ensure the data passed to it is correct.
-      // If the issue is with the API endpoint or credentials, that's outside this component's scope.
-      // We'll assume the `ExportService` is correctly configured or that its setup is handled externally.
-      // The fix focuses on passing the correct, filtered data.
       const success = await ExportService.sendEmail(exportData, filename, emailOptions)
-
+      
       if (success) {
-        alert("Email sent successfully! The report has been sent as an HTML file that can be printed as PDF.")
         setIsOpen(false)
         setEmail("")
         setEmailMessage("")
-      } else {
-        // This might indicate an issue with the email service itself, or configuration.
-        // For example, if the email service is in demo mode or credentials are invalid.
-        // Without access to ExportService, we can only report failure.
-        alert("Failed to send email. Please try again. If the problem persists, check your email service configuration.")
+        // You could add a toast notification here
       }
     } catch (error) {
-      console.error("Error sending email:", error)
-      alert("Failed to send email. Please try again.")
+      console.error("Email sending failed:", error)
     } finally {
       setIsLoading(false)
     }
@@ -211,16 +165,19 @@ export function ExportDialog({
             <div className="flex items-start gap-2">
               <FileText className="w-4 h-4 text-blue-600 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium">Export Method</p>
-                <p>Downloads will open a print dialog where you can save as PDF or print directly.</p>
+                <p className="font-medium mb-1">Export Information</p>
+                <p>
+                  The export will generate an HTML report that can be opened in any browser and printed as PDF.
+                  {startDate || endDate ? " Data will be filtered by the selected date range." : " All data will be included."}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Date Range */}
-          <div className="space-y-2">
+          {/* Date Range Selection */}
+          <div className="space-y-3">
             <Label>Date Range (Optional)</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
