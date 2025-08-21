@@ -10,6 +10,7 @@ import { Search, Filter, Download, Copy } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { ExportDialog } from "@/components/export-dialog"
+import { ProgressSimulator } from "@/lib/progress-simulator"
 
 const generateTransactions = (userType: string) => {
   // Return empty array for new registered users
@@ -201,12 +202,20 @@ export default function TransactionsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterField, setFilterField] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
+  const [progressData, setProgressData] = useState({ transactions: 54234 })
   const itemsPerPage = 20
 
   useEffect(() => {
     const storedUserType = localStorage.getItem("payflow_user_type") || "demo"
     setUserType(storedUserType)
-    setTransactions(generateTransactions(storedUserType))
+    const generatedTransactions = generateTransactions(storedUserType)
+    setTransactions(generatedTransactions)
+    
+    if (storedUserType === "demo") {
+      const simulator = new ProgressSimulator(16800000, 16983, 54234)
+      const currentProgress = simulator.getCurrentProgress()
+      setProgressData({ transactions: currentProgress.transactions })
+    }
   }, [])
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -351,7 +360,7 @@ export default function TransactionsPage() {
           <CardTitle className="flex items-center justify-between">
             <span>Transactions</span>
             <Badge variant="secondary">
-              {filteredTransactions.length.toLocaleString()} transactions
+              {userType === "registered" ? "0" : progressData.transactions.toLocaleString()} total transactions
             </Badge>
           </CardTitle>
         </CardHeader>

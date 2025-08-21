@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowUpRight, Users, CreditCard, TrendingUp, Download, Loader2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ProgressSimulator } from "@/lib/progress-simulator"
 
 const zeroTransactionData = [
   { month: "Jan", amount: 0 },
@@ -66,11 +67,25 @@ export default function DashboardPage() {
     transactions: true,
   })
   const [userType, setUserType] = useState<"registered" | "demo">("demo")
+  const [progressData, setProgressData] = useState({
+    revenue: 16800000,
+    customers: 16983,
+    transactions: 54234
+  })
 
   useEffect(() => {
     const storedUserType = localStorage.getItem("payflow_user_type")
     if (storedUserType === "registered") {
       setUserType("registered")
+    } else {
+      // Initialize progress simulator for demo users
+      const simulator = new ProgressSimulator(16800000, 16983, 54234)
+      const currentProgress = simulator.getCurrentProgress()
+      setProgressData({
+        revenue: currentProgress.revenue,
+        customers: currentProgress.customers,
+        transactions: currentProgress.transactions
+      })
     }
 
     const loadData = async () => {
@@ -130,9 +145,11 @@ export default function DashboardPage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userType === "registered" ? "ETB 0" : "ETB 16.8M"}</div>
+                <div className="text-2xl font-bold">
+                  {userType === "registered" ? "ETB 0" : `ETB ${(progressData.revenue / 1000000).toFixed(1)}M`}
+                </div>
                 <p className="text-xs text-muted-foreground mb-1">
-                  {userType === "registered" ? "$0 USD" : "$119,621 USD"}
+                  {userType === "registered" ? "$0 USD" : `$${Math.floor(progressData.revenue * 0.0071).toLocaleString()} USD`}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {userType === "registered" ? (
@@ -154,7 +171,7 @@ export default function DashboardPage() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userType === "registered" ? "0" : "16,983"}</div>
+                <div className="text-2xl font-bold">{userType === "registered" ? "0" : progressData.customers.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
                   {userType === "registered" ? (
                     <span className="text-muted-foreground">No customers yet</span>
@@ -175,7 +192,7 @@ export default function DashboardPage() {
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userType === "registered" ? "0" : "54,234"}</div>
+                <div className="text-2xl font-bold">{userType === "registered" ? "0" : progressData.transactions.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
                   {userType === "registered" ? (
                     <span className="text-muted-foreground">No transactions yet</span>

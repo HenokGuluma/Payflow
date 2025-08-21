@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { ProgressSimulator } from "@/lib/progress-simulator"
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -41,6 +42,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!isAuthenticated) {
     return null
+  }
+
+  // Mock logout function for demonstration purposes
+  const handleLogout = () => {
+    localStorage.removeItem("payflow_user_type")
+    ProgressSimulator.resetProgress() // Reset progress simulation
+    router.push("/login")
   }
 
   return <>{children}</>
