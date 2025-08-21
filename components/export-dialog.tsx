@@ -42,8 +42,7 @@ export function ExportDialog({
 
   // Get the current filtered data for email content generation
   const getCurrentExportData = () => {
-    const filteredData = filterDataByDateRange(data, startDate, endDate)
-    return formatDataForExport ? formatDataForExport(filteredData) : filteredData
+    return filterDataByDateRange(data, startDate, endDate)
   }
 
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
@@ -105,22 +104,22 @@ export function ExportDialog({
     try {
       setIsLoading(true)
 
+      // Since data is already formatted when passed to ExportDialog, 
+      // we just need to filter by date if needed
       const filteredData = filterDataByDateRange(data, startDate, endDate)
-      const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
 
       console.log("Filtered data:", filteredData)
-      console.log("Processed data:", processedData)
       console.log("Filtered summary:", filteredSummary)
 
-      const headers = processedData.length > 0 && Array.isArray(processedData[0])
+      const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
-        : Object.keys(processedData[0] || {})
+        : Object.keys(filteredData[0] || {})
 
       const exportData = {
         title,
         headers,
-        data: processedData,
+        data: filteredData,
         summary: filteredSummary,
         startDate: startDate?.toLocaleDateString(),
         endDate: endDate?.toLocaleDateString(),
@@ -142,20 +141,18 @@ export function ExportDialog({
       setIsLoading(true)
 
       const filteredData = filterDataByDateRange(data, startDate, endDate)
-      const processedData = formatDataForExport ? formatDataForExport(filteredData) : filteredData
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
 
       console.log("Email - Filtered data:", filteredData)
-      console.log("Email - Processed data:", processedData)
 
-      const headers = processedData.length > 0 && Array.isArray(processedData[0])
+      const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
-        : Object.keys(processedData[0] || {})
+        : Object.keys(filteredData[0] || {})
 
       const exportData = {
         title,
         headers,
-        data: processedData,
+        data: filteredData,
         summary: filteredSummary,
         startDate: startDate?.toLocaleDateString(),
         endDate: endDate?.toLocaleDateString(),
