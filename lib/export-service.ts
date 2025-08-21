@@ -34,12 +34,40 @@ export class ExportService {
             margin-bottom: 30px; 
             border-bottom: 2px solid #10b981; 
             padding-bottom: 20px; 
+            position: relative;
           }
           .logo { 
-            font-size: 18px; 
+            font-size: 20px; 
             font-weight: bold; 
             color: #10b981; 
             margin-bottom: 10px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+          }
+          .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+          }
+          .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            font-size: 12px;
+            color: #10b981;
+            transform: rotate(-45deg);
+            pointer-events: none;
+            z-index: 1000;
           }
           .title { 
             font-size: 24px; 
@@ -110,18 +138,33 @@ export class ExportService {
             color: #6b7280; 
             font-style: italic; 
           }
+          @media print {
+            .watermark {
+              opacity: 0.15 !important;
+              position: fixed !important;
+            }
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
         </style>
       </head>
       <body>
         <div class="header">
-          <div class="logo">PayEthio Payment Solutions</div>
+          <div class="logo">
+            <div class="logo-icon">PE</div>
+            PayEthio Payment Solutions
+          </div>
           <div class="title">${exportData.title}</div>
           ${exportData.startDate && exportData.endDate ? 
             `<div class="date-range">Date Range: ${exportData.startDate} to ${exportData.endDate}</div>` : 
             ''
           }
-          <div class="generated">Generated: ${new Date().toLocaleDateString()}</div>
+          <div class="generated">Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>
         </div>
+
+        <div class="watermark">PayEthio Secure Report</div>
 
         ${exportData.summary ? `
           <div class="summary">
@@ -303,9 +346,12 @@ export class ExportService {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to send email")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to send email")
       }
 
+      const result = await response.json()
+      console.log("Email result:", result.message)
       return true
     } catch (error) {
       console.error("Error sending email:", error)

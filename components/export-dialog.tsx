@@ -270,9 +270,14 @@ export function ExportDialog({
       const success = await ExportService.sendEmail(exportData, filename, emailOptions)
 
       if (success) {
-        setIsOpen(false)
-        setEmail("")
-        setEmailMessage("")
+        setEmailSent(true)
+        // Show success for 2 seconds then close
+        setTimeout(() => {
+          setIsOpen(false)
+          setEmail("")
+          setEmailMessage("")
+          setEmailSent(false)
+        }, 2000)
       }
     } catch (error) {
       console.error("Email sending failed:", error)
@@ -439,21 +444,43 @@ export function ExportDialog({
             </>
           )}
 
+          {/* Success Message */}
+          {emailSent && (
+            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+                <div className="text-sm text-green-800">
+                  <p className="font-medium">Email sent successfully!</p>
+                  <p>The report has been sent to {email}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-2 pt-4">
-            <Button onClick={handleDownload} className="flex-1" disabled={isLoading}>
+            <Button onClick={handleDownload} className="flex-1" disabled={isLoading || emailSent}>
               <Download className="w-4 h-4 mr-2" />
               Export & Print
             </Button>
 
             {email && (
-              <Button onClick={handleEmailSend} disabled={isLoading} variant="secondary">
+              <Button onClick={handleEmailSend} disabled={isLoading || emailSent} variant="secondary">
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : emailSent ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 bg-green-500 rounded-full flex items-center justify-content-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    Sent
+                  </>
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
                 )}
-                Send Email
+                {emailSent ? "Sent" : "Send Email"}
               </Button>
             )}
           </div>

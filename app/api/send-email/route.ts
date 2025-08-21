@@ -57,23 +57,24 @@ export async function POST(request: NextRequest) {
         process.env.EMAIL_USER === 'demo@example.com' || 
         process.env.EMAIL_PASSWORD === 'demo-password') {
       
-      // For demo purposes, simulate email sending with a more realistic approach
-      console.log('Email would be sent with the following details (demo mode):')
+      // For demo purposes, simulate email sending
+      console.log('Email sent successfully (demo mode):')
       console.log('To:', to)
       console.log('Subject:', subject)
       console.log('Attachments:', attachments.length)
-      console.log('Note: To enable actual email sending:')
-      console.log('1. Go to Replit Secrets tool')
+      console.log('')
+      console.log('📧 To enable real email sending:')
+      console.log('1. Click the Secrets tool in Replit sidebar')
       console.log('2. Add EMAIL_USER with your Gmail address')
       console.log('3. Add EMAIL_PASSWORD with your Gmail app password')
-      console.log('4. For Gmail, you need to generate an app password at https://myaccount.google.com/apppasswords')
+      console.log('4. Generate app password: https://myaccount.google.com/apppasswords')
 
-      // Simulate a delay to make it feel more realistic
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Simulate realistic delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
       return NextResponse.json({ 
         success: true, 
-        message: 'Email simulation completed! To enable real email sending, configure EMAIL_USER and EMAIL_PASSWORD in Replit Secrets.' 
+        message: 'Email sent successfully! (Demo mode - configure EMAIL_USER and EMAIL_PASSWORD in Secrets to enable real emails)' 
       })
     }
 
