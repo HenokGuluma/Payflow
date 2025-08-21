@@ -32,50 +32,68 @@ const generateWithdrawalHistory = (userType: string) => {
   const statuses = ["completed", "pending", "processing", "failed"]
   const statusWeights = [0.75, 0.12, 0.08, 0.05] // 75% completed, 12% pending, 8% processing, 5% failed
 
-  for (let i = 0; i < 7500; i++) {
-    const randomStatus = () => {
-      const rand = Math.random()
-      let cumulative = 0
-      for (let j = 0; j < statusWeights.length; j++) {
-        cumulative += statusWeights[j]
-        if (rand <= cumulative) return statuses[j]
-      }
-      return statuses[0]
-    }
+  // Define withdrawal distribution across May-August to match transaction pattern
+  const withdrawalDistribution = [
+    { month: 4, withdrawals: 250 }, // May (month 4 in 0-indexed)
+    { month: 5, withdrawals: 800 }, // June
+    { month: 6, withdrawals: 2000 }, // July
+    { month: 7, withdrawals: 4450 }, // August
+  ]
 
-    const status = randomStatus()
-    const amount = Math.floor(Math.random() * 95000) + 5000 // 5K-100K ETB
-    const bank = banks[Math.floor(Math.random() * banks.length)]
-    const daysAgo = Math.floor(Math.random() * 90) + 1
-    const date = new Date()
-    date.setDate(date.getDate() - daysAgo)
+  let withdrawalId = 0
+  const currentYear = new Date().getFullYear()
+
+  withdrawalDistribution.forEach((monthData) => {
+    for (let i = 0; i < monthData.withdrawals; i++) {
+      const randomStatus = () => {
+        const rand = Math.random()
+        let cumulative = 0
+        for (let j = 0; j < statusWeights.length; j++) {
+          cumulative += statusWeights[j]
+          if (rand <= cumulative) return statuses[j]
+        }
+        return statuses[0]
+      }
+
+      const status = randomStatus()
+      const amount = Math.floor(Math.random() * 95000) + 5000 // 5K-100K ETB
+      const bank = banks[Math.floor(Math.random() * banks.length)]
+      
+      // Generate random date within the specific month
+      const monthStart = new Date(currentYear, monthData.month, 1)
+      const monthEnd = new Date(currentYear, monthData.month + 1, 1)
+      const randomDate = new Date(
+        monthStart.getTime() + Math.random() * (monthEnd.getTime() - monthStart.getTime())
+      )
+      const date = randomDate.toISOString().split("T")[0]
 
     const bankCodes = {
-      "Commercial Bank of Ethiopia": "CBE",
-      "Dashen Bank": "DSH",
-      "Awash Bank": "AWB",
-      "Bank of Abyssinia": "BOA",
-      "Cooperative Bank of Oromia": "CBO",
-      "Nib International Bank": "NIB",
-      "United Bank": "UNB",
-      "Wegagen Bank": "WEG",
-      "Lion International Bank": "LIB",
-      "Oromia International Bank": "OIB",
-      "Bunna International Bank": "BIB",
+        "Commercial Bank of Ethiopia": "CBE",
+        "Dashen Bank": "DSH",
+        "Awash Bank": "AWB",
+        "Bank of Abyssinia": "BOA",
+        "Cooperative Bank of Oromia": "CBO",
+        "Nib International Bank": "NIB",
+        "United Bank": "UNB",
+        "Wegagen Bank": "WEG",
+        "Lion International Bank": "LIB",
+        "Oromia International Bank": "OIB",
+        "Bunna International Bank": "BIB",
+      }
+
+      const bankCode = bankCodes[bank as keyof typeof bankCodes] || "UNK"
+      const reference = `${bankCode}${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+
+      withdrawals.push({
+        id: `WD${String(++withdrawalId).padStart(4, "0")}`,
+        amount,
+        status,
+        bank,
+        date,
+        reference,
+      })
     }
-
-    const bankCode = bankCodes[bank as keyof typeof bankCodes] || "UNK"
-    const reference = `${bankCode}${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-
-    withdrawals.push({
-      id: `WD${String(i + 1).padStart(4, "0")}`,
-      amount,
-      status,
-      bank,
-      date: date.toISOString().split("T")[0],
-      reference,
-    })
-  }
+  })
 
   return withdrawals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
