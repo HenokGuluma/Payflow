@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
@@ -6,17 +5,23 @@ export async function POST(request: NextRequest) {
   try {
     const { to, subject, message, attachment, htmlAttachment } = await request.json()
 
-    // Create transporter (using Gmail as example - you'd configure with your SMTP settings)
-    const transporter = nodemailer.createTransport({
+    // Create transporter with better Gmail configuration
+    const transporter = nodemailer.createTransporter({
       service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER || 'demo@example.com',
-        pass: process.env.EMAIL_PASSWORD || 'demo-password',
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     })
 
     const attachments = []
-    
+
     if (attachment) {
       attachments.push({
         filename: attachment.filename,
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD || 
         process.env.EMAIL_USER === 'demo@example.com' || 
         process.env.EMAIL_PASSWORD === 'demo-password') {
-      
+
       // For demo purposes, simulate email sending
       console.log('Email sent successfully (demo mode):')
       console.log('To:', to)

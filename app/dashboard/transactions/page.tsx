@@ -127,25 +127,30 @@ const generateTransactions = (userType: string) => {
     })
   }
 
-  // Define monthly distribution - exponential growth pattern totaling 54,255 transactions
+  // Define monthly distribution - exponential growth pattern totaling exactly 16,800,000 ETB
+  const targetTotal = 16800000 // 16.8M ETB
   const monthlyDistribution = [
-    { month: "Jan", transactions: 800, revenue: 39704, averageAmount: 150 },
-    { month: "Feb", transactions: 900, revenue: 85080, averageAmount: 150 },
-    { month: "Mar", transactions: 1000, revenue: 113440, averageAmount: 150 },
-    { month: "Apr", transactions: 1100, revenue: 155980, averageAmount: 150 },
-    { month: "May", transactions: 3800, revenue: 2906900, averageAmount: 150 },
-    { month: "Jun", transactions: 10700, revenue: 3417380, averageAmount: 150 },
-    { month: "Jul", transactions: 16500, revenue: 4268180, averageAmount: 150 },
-    { month: "Aug", transactions: 19455, revenue: 5813336, averageAmount: 150 },
+    { month: "Jan", transactions: 800, targetRevenue: 400000 },   // 400K
+    { month: "Feb", transactions: 900, targetRevenue: 500000 },   // 500K
+    { month: "Mar", transactions: 1000, targetRevenue: 600000 },  // 600K
+    { month: "Apr", transactions: 1100, targetRevenue: 800000 },  // 800K
+    { month: "May", transactions: 3800, targetRevenue: 2000000 }, // 2M
+    { month: "Jun", transactions: 10700, targetRevenue: 3200000 }, // 3.2M
+    { month: "Jul", transactions: 16500, targetRevenue: 4100000 }, // 4.1M
+    { month: "Aug", transactions: 19455, targetRevenue: 5200000 }, // 5.2M
   ]
 
   const transactions = []
   let transactionId = 1
+  let totalGenerated = 0
 
   // Get the current year
   const currentYear = new Date().getFullYear()
 
   monthlyDistribution.forEach((monthData, monthIndex) => {
+    let monthTotal = 0
+    const avgAmount = monthData.targetRevenue / monthData.transactions
+
     for (let i = 0; i < monthData.transactions; i++) {
       const customer = customers[Math.floor(Math.random() * customers.length)]
 
@@ -156,31 +161,43 @@ const generateTransactions = (userType: string) => {
         monthDate.getTime() + Math.random() * (nextMonthDate.getTime() - monthDate.getTime())
       )
 
-      // Generate varied transaction amounts (50-2000 ETB, mostly even numbers)
       let amount
-      const random = Math.random()
+      const isLastTransaction = i === monthData.transactions - 1
       
-      if (random < 0.6) {
-        // 60% - Small amounts (50-500 ETB)
-        const evenAmounts = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
-        const oddAmounts = [75, 125, 175, 225, 275, 325, 375, 425, 475]
-        amount = random < 0.05 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
-      } else if (random < 0.85) {
-        // 25% - Medium amounts (500-1000 ETB)
-        const evenAmounts = [500, 600, 700, 800, 900, 1000]
-        const oddAmounts = [525, 575, 625, 675, 725, 775, 825, 875, 925]
-        amount = random < 0.1 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+      if (isLastTransaction) {
+        // For the last transaction, use remaining amount to hit exact target
+        amount = monthData.targetRevenue - monthTotal
       } else {
-        // 15% - Large amounts (1000-2000 ETB)
-        const evenAmounts = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000]
-        const oddAmounts = [1050, 1150, 1250, 1350, 1450, 1550, 1650, 1750, 1850, 1950]
-        amount = random < 0.15 ? oddAmounts[Math.floor(Math.random() * oddAmounts.length)] : evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+        // Generate amounts around the average with mostly even numbers
+        const random = Math.random()
+        const variation = avgAmount * 0.8 // ±80% variation
+        const baseAmount = avgAmount + (random - 0.5) * variation
+        
+        // Round to mostly even amounts
+        if (random < 0.85) {
+          // 85% even amounts (rounded to nearest 50)
+          amount = Math.round(baseAmount / 50) * 50
+        } else {
+          // 15% odd amounts (rounded to nearest 25)
+          amount = Math.round(baseAmount / 25) * 25
+        }
+        
+        // Ensure minimum amount
+        amount = Math.max(50, amount)
+        
+        // Adjust if this would exceed month target
+        if (monthTotal + amount > monthData.targetRevenue) {
+          amount = monthData.targetRevenue - monthTotal
+        }
       }
 
-      const roundedAmount = amount
+      const roundedAmount = Math.max(50, Math.round(amount))
 
       const chapaRef = `AP${Math.random().toString(36).substring(2, 12)}`
       const bankRef = `CAR${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
+      monthTotal += roundedAmount
+      totalGenerated += roundedAmount
 
       transactions.push({
         id: transactionId++,
@@ -195,7 +212,11 @@ const generateTransactions = (userType: string) => {
         timestamp: randomDate.toISOString(),
       })
     }
+    
+    console.log(`Month ${monthData.month}: Generated ${monthTotal.toLocaleString()} ETB (target: ${monthData.targetRevenue.toLocaleString()})`)
   })
+  
+  console.log(`Total generated: ${totalGenerated.toLocaleString()} ETB (target: ${targetTotal.toLocaleString()})`)
 
   return transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 }
