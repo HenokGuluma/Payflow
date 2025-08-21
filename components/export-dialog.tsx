@@ -89,18 +89,22 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
       
+      // Extract headers from the first data item or use default headers
+      const headers = filteredData.length > 0 
+        ? Object.keys(filteredData[0])
+        : ['Date', 'Amount', 'Description']
+      
       const exportData = {
         title,
+        headers,
         data: filteredData,
         summary: filteredSummary,
-        dateRange: {
-          start: startDate?.toISOString(),
-          end: endDate?.toISOString(),
-        },
+        startDate: startDate?.toLocaleDateString(),
+        endDate: endDate?.toLocaleDateString(),
       }
 
       const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`
-      await ExportService.exportToPDF(exportData, filename)
+      ExportService.downloadPDF(exportData, filename)
     } catch (error) {
       console.error("Export failed:", error)
     } finally {
@@ -117,14 +121,18 @@ export function ExportDialog({ title, data, summary = {}, children }: ExportDial
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
       
+      // Extract headers from the first data item or use default headers
+      const headers = filteredData.length > 0 
+        ? Object.keys(filteredData[0])
+        : ['Date', 'Amount', 'Description']
+      
       const exportData = {
         title,
+        headers,
         data: filteredData,
         summary: filteredSummary,
-        dateRange: {
-          start: startDate?.toISOString(),
-          end: endDate?.toISOString(),
-        },
+        startDate: startDate?.toLocaleDateString(),
+        endDate: endDate?.toLocaleDateString(),
       }
 
       const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`

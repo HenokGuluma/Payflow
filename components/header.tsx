@@ -25,13 +25,13 @@ export function Header() {
             <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">P</span>
             </div>
-            <span className="text-xl font-bold">PayFlow</span>
+            <span className="text-xl font-bold">PayEthio</span>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <button onClick={() => scrollToSection("about")} className="hover:text-green-400 transition-colors">
-              About PayFlow
+              About PayEthio
             </button>
             <button onClick={() => scrollToSection("payments")} className="hover:text-green-400 transition-colors">
               Payments
@@ -76,7 +76,7 @@ export function Header() {
                 onClick={() => scrollToSection("about")}
                 className="hover:text-green-400 transition-colors text-left"
               >
-                About PayFlow
+                About PayEthio
               </button>
               <button
                 onClick={() => scrollToSection("payments")}
@@ -92,7 +92,7 @@ export function Header() {
               </button>
               <button
                 onClick={() => scrollToSection("developers")}
-                className="hover:text-green-400 transition-colors text-left"
+                className="hover:text-text-green-400 transition-colors text-left"
               >
                 Developers
               </button>

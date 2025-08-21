@@ -14,10 +14,10 @@ export function Footer() {
               <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="text-xl font-bold">PayFlow</span>
+              <span className="text-xl font-bold">PayEthio</span>
             </div>
             <p className="text-slate-400 leading-relaxed">
-              Empowering businesses across Africa with seamless payment solutions. Fast, secure, and reliable.
+              Empowering Ethiopian businesses with modern, secure, and reliable payment solutions.
             </p>
             <div className="flex space-x-4">
               <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
@@ -99,7 +99,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-slate-400 text-sm">© 2024 PayFlow. All rights reserved.</p>
+          <p className="text-slate-400 text-sm">© 2024 PayEthio. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-slate-400 hover:text-white text-sm transition-colors">
               Privacy Policy

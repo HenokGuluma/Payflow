@@ -334,9 +334,7 @@ export default function TransactionsPage() {
               </Button>
               <ExportDialog
                 title="Transactions Report"
-                data={filteredTransactions}
-                headers={["Status", "Customer", "Phone", "Amount", "Payment", "Date", "PayFlow Ref", "Bank Ref"]}
-                filename="payflow-transactions.pdf"
+                data={formatTransactionsForExport(filteredTransactions)}
                 summary={{
                   "Total Transactions": filteredTransactions.length.toLocaleString(),
                   "Total Amount": `ETB ${totalAmount.toLocaleString()}`

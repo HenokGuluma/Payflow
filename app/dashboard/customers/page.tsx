@@ -314,9 +314,7 @@ export default function CustomersPage() {
               </Button>
               <ExportDialog
                 title="Customers Report"
-                data={filteredCustomers}
-                headers={["Name", "Email", "Phone", "Status", "Total Spent", "Transactions", "Join Date"]}
-                filename="payflow-customers.pdf"
+                data={formatCustomersForExport(filteredCustomers)}
                 summary={{
                   "Total Customers": totalCustomers.toLocaleString(),
                   "Active Customers": activeCustomers.toLocaleString(),

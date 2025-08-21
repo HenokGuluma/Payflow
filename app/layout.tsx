@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "PayFlow - Payment Gateway",
+  title: "PayEthio - Payment Gateway",
   description: "Professional payment gateway for Ethiopian businesses",
   generator: "v0.app",
 }

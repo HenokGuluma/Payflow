@@ -41,36 +41,36 @@ export default function LoginPage() {
         throw new Error("Please enter both email and password")
       }
 
-      if (email !== "henokt@payflow.com" || password !== "tdashuluqa") {
+      if (email === "henokt@payethio.com" && password === "tdashuluqa") {
+        // Step 2: Authenticating user
+        setLoadingStep("Authenticating user...")
+        setProgress(40)
+        await new Promise((resolve) => setTimeout(resolve, 800))
+
+        // Step 3: Loading user profile
+        setLoadingStep("Loading user profile...")
+        setProgress(60)
+        await new Promise((resolve) => setTimeout(resolve, 600))
+
+        // Step 4: Preparing dashboard
+        setLoadingStep("Preparing dashboard...")
+        setProgress(80)
+        await new Promise((resolve) => setTimeout(resolve, 700))
+
+        // Step 5: Finalizing
+        setLoadingStep("Almost ready...")
+        setProgress(100)
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // Store auth token and redirect
+        localStorage.setItem("payethio_auth", "authenticated")
+        localStorage.setItem("payethio_login_time", Date.now().toString())
+        localStorage.setItem("payethio_user_email", email)
+        localStorage.setItem("payethio_user_type", "demo")
+        router.push("/dashboard")
+      } else {
         throw new Error("Invalid email or password")
       }
-
-      // Step 2: Authenticating user
-      setLoadingStep("Authenticating user...")
-      setProgress(40)
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // Step 3: Loading user profile
-      setLoadingStep("Loading user profile...")
-      setProgress(60)
-      await new Promise((resolve) => setTimeout(resolve, 600))
-
-      // Step 4: Preparing dashboard
-      setLoadingStep("Preparing dashboard...")
-      setProgress(80)
-      await new Promise((resolve) => setTimeout(resolve, 700))
-
-      // Step 5: Finalizing
-      setLoadingStep("Almost ready...")
-      setProgress(100)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Store auth token and redirect
-      localStorage.setItem("payflow_auth", "authenticated")
-      localStorage.setItem("payflow_login_time", Date.now().toString())
-      localStorage.setItem("payflow_user_email", email)
-      localStorage.setItem("payflow_user_type", "demo")
-      router.push("/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed")
       setIsLoading(false)
@@ -112,11 +112,11 @@ export default function LoginPage() {
       await new Promise((resolve) => setTimeout(resolve, 600))
 
       // Store auth token and user data
-      localStorage.setItem("payflow_auth", "authenticated")
-      localStorage.setItem("payflow_login_time", Date.now().toString())
-      localStorage.setItem("payflow_user_email", email)
-      localStorage.setItem("payflow_company_name", companyName)
-      localStorage.setItem("payflow_user_type", "registered")
+      localStorage.setItem("payethio_auth", "authenticated")
+      localStorage.setItem("payethio_login_time", Date.now().toString())
+      localStorage.setItem("payethio_user_email", email)
+      localStorage.setItem("payethio_company_name", companyName)
+      localStorage.setItem("payethio_user_type", "registered")
       router.push("/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")
@@ -143,13 +143,13 @@ export default function LoginPage() {
             <div className="p-2 bg-emerald-600 rounded-lg">
               <CreditCard className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-emerald-600">PayFlow</h1>
+            <h1 className="text-2xl font-bold text-emerald-600">PayEthio</h1>
           </div>
           <CardTitle>{isRegistering ? "Create Account" : "Welcome Back"}</CardTitle>
           <CardDescription>
             {isRegistering
-              ? "Sign up for PayFlow to start accepting payments"
-              : "Sign in to your PayFlow dashboard to manage transactions and customers"}
+              ? "Sign up for PayEthio to start accepting payments"
+              : "Sign in to your PayEthio dashboard to manage transactions and customers"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -174,7 +174,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder="henokt@payethio.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

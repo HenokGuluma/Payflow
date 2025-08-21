@@ -53,19 +53,19 @@ export default function DashboardLayout({
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userProfile, setUserProfile] = useState({
     name: "Henok Taddesse",
-    email: "henokt@payflow.com",
+    email: "henokt@payethio.com",
     initials: "HT",
     userType: "demo",
   })
 
   useEffect(() => {
-    const token = localStorage.getItem("payflow_auth")
+    const token = localStorage.getItem("payethio_auth")
     if (token !== "authenticated") {
       router.push("/login")
     } else {
       setIsAuthenticated(true)
-      const storedUserType = localStorage.getItem("payflow_user_type") || "demo"
-      const storedEmail = localStorage.getItem("payflow_user_email") || "henokt@payflow.com"
+      const storedUserType = localStorage.getItem("payethio_user_type") || "demo"
+      const storedEmail = localStorage.getItem("payethio_user_email") || "henokt@payethio.com"
 
       if (storedUserType === "registered") {
         setUserProfile({
@@ -77,7 +77,7 @@ export default function DashboardLayout({
       } else {
         setUserProfile({
           name: "Henok Taddesse",
-          email: "henokt@payflow.com",
+          email: "henokt@payethio.com",
           initials: "HT",
           userType: "demo",
         })
@@ -86,7 +86,7 @@ export default function DashboardLayout({
   }, [router])
 
   const handleLogout = () => {
-    localStorage.removeItem("payflow_auth")
+    localStorage.removeItem("payethio_auth")
     router.push("/login")
   }
 
@@ -109,7 +109,7 @@ export default function DashboardLayout({
               <CreditCard className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-sidebar-foreground">PayFlow</h1>
+              <h1 className="text-lg font-semibold text-sidebar-foreground">PayEthio</h1>
               <p className="text-xs text-muted-foreground">Merchant ID: 2862622</p>
             </div>
           </div>
