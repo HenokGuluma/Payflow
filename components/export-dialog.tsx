@@ -37,6 +37,12 @@ export function ExportDialog({
   const [emailSubject, setEmailSubject] = useState(`${title} Export Report`)
   const [emailMessage, setEmailMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+
+  // Placeholder for the actual data that will be exported
+  const exportData = data;
+  const processedSummary = summary; // Assuming summary is already processed or doesn't need date filtering
 
   const filterDataByDateRange = (data: any[], start?: Date, end?: Date) => {
     if (!start && !end) return data
@@ -83,14 +89,12 @@ export function ExportDialog({
     newSummary["Total Amount"] = `ETB ${totalAmount.toLocaleString()}`
 
     // Copy other summary fields that might not be amount-related
-    Object.keys(originalSummary).forEach(key => {
+    Object.keys(summary).forEach(key => {
       if (!key.toLowerCase().includes('total') ||
           (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
-        newSummary[key] = originalSummary[key];
+        newSummary[key] = summary[key];
       }
-    })
-
-    return newSummary
+    });
   }
 
   const handleDownload = async () => {
@@ -166,6 +170,47 @@ export function ExportDialog({
       setIsLoading(false)
     }
   }
+
+  // Placeholder function for generating email content
+  const generateEmailContent = () => {
+    return `
+      <h1>${title} Report</h1>
+      <p>Date Range: ${startDate && endDate ? `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}` : 'All Time'}</p>
+      <h2>Summary:</h2>
+      <ul>
+        ${Object.entries(processedSummary).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
+      </ul>
+      <h2>Transactions:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Amount</th>
+            <th>Payment Method</th>
+            <th>Date</th>
+            <th>PayEthio Reference</th>
+            <th>Bank Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Array.isArray(exportData) ? exportData.map((item: any) => `
+            <tr>
+              <td>${item.status || ''}</td>
+              <td>${item.customerName || ''}</td>
+              <td>${item.customerPhone || ''}</td>
+              <td>${item.amount ? `ETB ${item.amount.toLocaleString()}` : ''}</td>
+              <td>${item.paymentMethod || ''}</td>
+              <td>${item.date || ''}</td>
+              <td>${item.payEthioReference || ''}</td>
+              <td>${item.bankReference || ''}</td>
+            </tr>
+          `).join('') : ''}
+        </tbody>
+      </table>
+    `;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

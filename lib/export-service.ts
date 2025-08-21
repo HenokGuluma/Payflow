@@ -1,4 +1,3 @@
-
 "use client"
 
 export interface ExportData {
@@ -136,7 +135,7 @@ export class ExportService {
           }
           <div class="generated">Generated: ${new Date().toLocaleDateString()}</div>
         </div>
-        
+
         ${exportData.summary ? `
           <div class="summary">
             ${Object.entries(exportData.summary).map(([key, value]) => 
@@ -147,7 +146,7 @@ export class ExportService {
             ).join('')}
           </div>
         ` : ''}
-        
+
         ${exportData.data.length > 0 ? `
           <table>
             <thead>
@@ -175,7 +174,7 @@ export class ExportService {
 
   static async generatePDF(exportData: ExportData): Promise<Uint8Array> {
     const html = this.generateHTMLTable(exportData)
-    
+
     try {
       // Try PDFShift API first (you'd need to sign up for a free account)
       const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
@@ -233,10 +232,10 @@ export class ExportService {
             try {
               // Use the browser's print functionality
               iframeWindow.print()
-              
+
               // Clean up
               document.body.removeChild(iframe)
-              
+
               // For demo purposes, create a simple PDF-like response
               const demoContent = `PDF Export: ${new Date().toISOString()}\n\nThis is a fallback PDF generation method.`
               const encoder = new TextEncoder()
@@ -265,13 +264,13 @@ export class ExportService {
   static downloadPDF(exportData: ExportData, filename: string) {
     // For immediate download, generate HTML and open print dialog
     const html = this.generateHTMLTable(exportData)
-    
+
     // Create a new window with the HTML content
     const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(html)
       printWindow.document.close()
-      
+
       // Add print styles and trigger print dialog
       printWindow.onload = () => {
         printWindow.print()

@@ -41,8 +41,8 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900">Email</h4>
-                  <a href="mailto:info@payflow.com" className="text-green-600 hover:text-green-700">
-                    info@payflow.com
+                  <a href="mailto:info@payethio.com" className="text-green-600 hover:text-green-700">
+                    info@payethio.com
                   </a>
                 </div>
               </div>
