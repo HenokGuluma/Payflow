@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Download, Mail, Loader2 } from "lucide-react"
+import { CalendarIcon, Download, Mail, Loader2, FileText } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ExportService, ExportData, EmailOptions } from "@/lib/export-service"
@@ -51,7 +51,7 @@ export function ExportDialog({
     }
     
     if (formatDataForExport) {
-      filteredData = formatDataForExport(filteredData)
+      return formatDataForExport(filteredData)
     }
     
     return filteredData
@@ -100,7 +100,7 @@ export function ExportDialog({
       const success = await ExportService.sendEmail(exportData, filename, emailOptions)
       
       if (success) {
-        alert("Email sent successfully!")
+        alert("Email sent successfully! The report has been sent as an HTML file that can be printed as PDF.")
         setIsOpen(false)
         setEmail("")
         setEmailMessage("")
@@ -126,6 +126,17 @@ export function ExportDialog({
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Info message */}
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <div className="flex items-start gap-2">
+              <FileText className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Export Method</p>
+                <p>Downloads will open a print dialog where you can save as PDF or print directly.</p>
+              </div>
+            </div>
+          </div>
+
           {/* Date Range */}
           <div className="space-y-2">
             <Label>Date Range (Optional)</Label>
@@ -218,7 +229,7 @@ export function ExportDialog({
           <div className="flex gap-2 pt-4">
             <Button onClick={handleDownload} className="flex-1">
               <Download className="w-4 h-4 mr-2" />
-              Download PDF
+              Export & Print
             </Button>
             
             {email && (
