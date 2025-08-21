@@ -244,9 +244,9 @@ export default function TransactionsPage() {
       t.phone,
       `ETB ${t.amount.toLocaleString()}`,
       t.paymentMethod,
+      new Date(t.timestamp).toLocaleDateString(),
       t.chapaReference,
       t.bankReference,
-      new Date(t.timestamp).toLocaleDateString(),
     ])
   }
 
@@ -311,7 +311,7 @@ export default function TransactionsPage() {
               <ExportDialog
                 title="Transactions Report"
                 data={filteredTransactions}
-                headers={["Status", "Customer", "Phone", "Amount", "Payment", "PayFlow Ref", "Bank Ref", "Date"]}
+                headers={["Status", "Customer", "Phone", "Amount", "Payment", "Date", "PayFlow Ref", "Bank Ref"]}
                 filename="payflow-transactions.pdf"
                 summary={{
                   "Total Transactions": filteredTransactions.length.toLocaleString(),
@@ -336,7 +336,7 @@ export default function TransactionsPage() {
           <CardTitle className="flex items-center justify-between">
             <span>Transactions</span>
             <Badge variant="secondary">
-              {filteredTransactions.length.toLocaleString()} transactions • ETB {totalAmount.toLocaleString()} total
+              {filteredTransactions.length.toLocaleString()} transactions
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -355,6 +355,7 @@ export default function TransactionsPage() {
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">CUSTOMER</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">AMOUNT</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">PAYMENT METHOD</th>
+                      <th className="px-6 py-4 text-sm font-medium text-muted-foreground">DATE</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">PAYFLOW REFERENCE</th>
                       <th className="px-6 py-4 text-sm font-medium text-muted-foreground">BANK REFERENCE</th>
                     </tr>
@@ -377,6 +378,14 @@ export default function TransactionsPage() {
                         </td>
                         <td className="px-6 py-4 font-medium">ETB {transaction.amount.toLocaleString()}</td>
                         <td className="px-6 py-4">{transaction.paymentMethod}</td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            {new Date(transaction.timestamp).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(transaction.timestamp).toLocaleTimeString()}
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm">{transaction.chapaReference}</span>
