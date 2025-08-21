@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   LayoutDashboard,
   CreditCard,
@@ -17,7 +16,22 @@ import {
   Settings,
   Menu,
   LogOut,
+  Bell,
+  Search,
+  User
 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -168,6 +182,10 @@ export default function DashboardLayout({
                 <AvatarImage src="/placeholder-dnqe5.png" />
                 <AvatarFallback>{userProfile.initials}</AvatarFallback>
               </Avatar>
+              <Button size="icon" variant="outline">
+                <Bell className="h-4 w-4" />
+              </Button>
+              <ThemeToggle />
             </div>
           </div>
         </header>
