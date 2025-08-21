@@ -53,7 +53,19 @@ export function ExportDialog({
     }
 
     return data.filter((item) => {
-      const itemDate = new Date(item.date || item.createdAt || item.timestamp)
+      let itemDate: Date
+      
+      if (Array.isArray(item)) {
+        // For array format: [status, customer, phone, amount, method, date, ref1, ref2]
+        const dateStr = item[5] // Date is at index 5
+        itemDate = new Date(dateStr)
+      } else {
+        // For object format
+        itemDate = new Date(item.date || item.createdAt || item.timestamp)
+      }
+      
+      if (isNaN(itemDate.getTime())) return true // Include if date parsing fails
+      
       if (start && itemDate < start) return false
       if (end && itemDate > end) return false
       return true
@@ -109,6 +121,12 @@ export function ExportDialog({
       const filteredData = filterDataByDateRange(data, startDate, endDate)
       const filteredSummary = calculateFilteredSummary(filteredData, summary)
 
+      const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
+        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
+        : data.length > 0 && Array.isArray(data[0])
+        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
+        : Object.keys((filteredData[0] || data[0]) || {})
+
       console.log("=== EXPORT DEBUG ===")
       console.log("Original data length:", data.length)
       console.log("Original data sample:", data.slice(0, 2))
@@ -116,11 +134,9 @@ export function ExportDialog({
       console.log("Filtered data sample:", filteredData.slice(0, 2))
       console.log("Headers:", headers)
       console.log("Filtered summary:", filteredSummary)
+      console.log("Start date:", startDate)
+      console.log("End date:", endDate)
       console.log("=== END DEBUG ===")
-
-      const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
-        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
-        : Object.keys(filteredData[0] || {})
 
       const exportData = {
         title,
@@ -153,7 +169,9 @@ export function ExportDialog({
 
       const headers = filteredData.length > 0 && Array.isArray(filteredData[0])
         ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
-        : Object.keys(filteredData[0] || {})
+        : data.length > 0 && Array.isArray(data[0])
+        ? ["Status", "Customer", "Phone", "Amount", "Payment Method", "Date", "PayEthio Reference", "Bank Reference"]
+        : Object.keys((filteredData[0] || data[0]) || {})
 
       const exportData = {
         title,
