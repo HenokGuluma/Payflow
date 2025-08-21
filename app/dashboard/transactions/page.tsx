@@ -124,14 +124,14 @@ const generateTransactions = (userType: string) => {
 
   // Define monthly distribution - exponential growth pattern totaling 54,255 transactions
   const monthlyDistribution = [
-    { month: "Jan", transactions: 800, revenue: 120000, averageAmount: 150 },
-    { month: "Feb", transactions: 900, revenue: 135000, averageAmount: 150 },
-    { month: "Mar", transactions: 1000, revenue: 150000, averageAmount: 150 },
-    { month: "Apr", transactions: 1100, revenue: 165000, averageAmount: 150 },
-    { month: "May", transactions: 3800, revenue: 570000, averageAmount: 150 },
-    { month: "Jun", transactions: 10700, revenue: 1605000, averageAmount: 150 },
-    { month: "Jul", transactions: 16500, revenue: 2475000, averageAmount: 150 },
-    { month: "Aug", transactions: 19455, revenue: 2918250, averageAmount: 150 },
+    { month: "Jan", transactions: 800, revenue: 39704, averageAmount: 150 },
+    { month: "Feb", transactions: 900, revenue: 85080, averageAmount: 150 },
+    { month: "Mar", transactions: 1000, revenue: 113440, averageAmount: 150 },
+    { month: "Apr", transactions: 1100, revenue: 155980, averageAmount: 150 },
+    { month: "May", transactions: 3800, revenue: 2906900, averageAmount: 150 },
+    { month: "Jun", transactions: 10700, revenue: 3417380, averageAmount: 150 },
+    { month: "Jul", transactions: 16500, revenue: 4268180, averageAmount: 150 },
+    { month: "Aug", transactions: 19455, revenue: 5813336, averageAmount: 150 },
   ]
 
   const transactions = []

@@ -30,14 +30,14 @@ const zeroCustomerGrowth = [
 ]
 
 const transactionData = [
-  { month: "Jan", amount: 180000 },
-  { month: "Feb", amount: 195000 },
-  { month: "Mar", amount: 210000 },
-  { month: "Apr", amount: 225000 },
-  { month: "May", amount: 850000 },
-  { month: "Jun", amount: 2400000 },
-  { month: "Jul", amount: 5900000 },
-  { month: "Aug", amount: 9200000 },
+  { month: "Jan", amount: 39704 },
+  { month: "Feb", amount: 85080 },
+  { month: "Mar", amount: 113440 },
+  { month: "Apr", amount: 155980 },
+  { month: "May", amount: 2906900 },
+  { month: "Jun", amount: 3417380 },
+  { month: "Jul", amount: 4268180 },
+  { month: "Aug", amount: 5813336 },
 ]
 
 const customerGrowth = [

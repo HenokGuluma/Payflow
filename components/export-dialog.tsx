@@ -111,7 +111,7 @@ export function ExportDialog({
 
       // Copy other summary fields that might not be amount-related
       Object.keys(summary).forEach(key => {
-        if (!key.toLowerCase().includes('total') || 
+        if (!key.toLowerCase().includes('total') ||
             (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
           newSummary[key] = summary[key];
         }
