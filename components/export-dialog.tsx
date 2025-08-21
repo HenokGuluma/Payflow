@@ -89,12 +89,14 @@ export function ExportDialog({
     newSummary["Total Amount"] = `ETB ${totalAmount.toLocaleString()}`
 
     // Copy other summary fields that might not be amount-related
-    Object.keys(summary).forEach(key => {
+    Object.keys(originalSummary).forEach(key => {
       if (!key.toLowerCase().includes('total') ||
           (!key.toLowerCase().includes('transaction') && !key.toLowerCase().includes('amount'))) {
-        newSummary[key] = summary[key];
+        newSummary[key] = originalSummary[key];
       }
     });
+
+    return newSummary
   }
 
   const handleDownload = async () => {
