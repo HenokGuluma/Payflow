@@ -52,18 +52,28 @@ export async function POST(request: NextRequest) {
       attachments,
     }
 
-    // For demo purposes, just log the email details
-    console.log('Email would be sent with the following details:')
-    console.log('To:', to)
-    console.log('Subject:', subject)
-    console.log('Attachments:', attachments.length)
+    // Check if email credentials are configured
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD || 
+        process.env.EMAIL_USER === 'demo@example.com' || 
+        process.env.EMAIL_PASSWORD === 'demo-password') {
+      console.log('Email would be sent with the following details (demo mode):')
+      console.log('To:', to)
+      console.log('Subject:', subject)
+      console.log('Attachments:', attachments.length)
+      console.log('Note: Configure EMAIL_USER and EMAIL_PASSWORD environment variables to enable actual email sending')
 
-    // In a real implementation, you would:
-    // await transporter.sendMail(mailOptions)
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Email sent successfully (demo mode - configure EMAIL_USER and EMAIL_PASSWORD to enable real emails)' 
+      })
+    }
+
+    // Send actual email if credentials are configured
+    await transporter.sendMail(mailOptions)
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Email sent successfully (demo mode)' 
+      message: 'Email sent successfully' 
     })
   } catch (error) {
     console.error('Error sending email:', error)

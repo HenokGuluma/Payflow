@@ -122,60 +122,62 @@ const generateTransactions = (userType: string) => {
     })
   }
 
+  // Define monthly distribution matching revenue data - exponential growth pattern
+  const monthlyDistribution = [
+    { month: "Jan", transactions: 1200, revenue: 180000, averageAmount: 150 },
+    { month: "Feb", transactions: 1300, revenue: 195000, averageAmount: 150 },
+    { month: "Mar", transactions: 1400, revenue: 210000, averageAmount: 150 },
+    { month: "Apr", transactions: 1500, revenue: 225000, averageAmount: 150 },
+    { month: "May", transactions: 5667, revenue: 850000, averageAmount: 150 },
+    { month: "Jun", transactions: 16000, revenue: 2400000, averageAmount: 150 },
+    { month: "Jul", transactions: 39333, revenue: 5900000, averageAmount: 150 },
+    { month: "Aug", transactions: 61333, revenue: 9200000, averageAmount: 150 },
+  ]
+
   const transactions = []
-  const now = Date.now()
-  const sixMonthsAgo = now - 180 * 24 * 60 * 60 * 1000 // 6 months ago
+  let transactionId = 1
 
-  for (let i = 0; i < 54234; i++) {
-    const customer = customers[Math.floor(Math.random() * customers.length)]
+  // Get the current year
+  const currentYear = new Date().getFullYear()
 
-    // Exponential growth: more recent transactions have higher probability and amounts
-    const timeProgress = i / 54234 // 0 to 1, where 1 is most recent
-    const exponentialFactor = Math.pow(timeProgress, 0.3) // Exponential curve
+  monthlyDistribution.forEach((monthData, monthIndex) => {
+    for (let i = 0; i < monthData.transactions; i++) {
+      const customer = customers[Math.floor(Math.random() * customers.length)]
 
-    // Date distribution: heavily weighted toward recent dates
-    const dateWeight = Math.pow(Math.random(), 2) // Skew toward recent dates
-    const transactionDate = new Date(sixMonthsAgo + dateWeight * (now - sixMonthsAgo))
+      // Generate random date within the month
+      const monthDate = new Date(currentYear, monthIndex, 1)
+      const nextMonthDate = new Date(currentYear, monthIndex + 1, 1)
+      const randomDate = new Date(
+        monthDate.getTime() + Math.random() * (nextMonthDate.getTime() - monthDate.getTime())
+      )
 
-    // Amount distribution with exponential growth
-    let amount
-    if (exponentialFactor < 0.4) {
-      // Early period: smaller even amounts
-      const evenAmounts = [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275]
-      amount = evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
-    } else if (exponentialFactor < 0.7) {
-      // Growth period: medium even amounts
-      const evenAmounts = [150, 200, 250, 300, 350, 400, 450, 500, 600, 750]
-      amount = evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
-    } else {
-      // Recent period: larger even amounts
-      const evenAmounts = [300, 400, 500, 600, 750, 1000, 1250, 1500, 1750, 2000, 2500]
-      amount = evenAmounts[Math.floor(Math.random() * evenAmounts.length)]
+      // Calculate amount based on average for the month with some variation
+      const baseAmount = monthData.averageAmount
+      const variation = 0.3 // 30% variation
+      const minAmount = Math.floor(baseAmount * (1 - variation))
+      const maxAmount = Math.floor(baseAmount * (1 + variation))
+      const amount = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount
+
+      // Round to nearest 25 to keep amounts even
+      const roundedAmount = Math.round(amount / 25) * 25
+
+      const chapaRef = `AP${Math.random().toString(36).substring(2, 12)}`
+      const bankRef = `CAR${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
+      transactions.push({
+        id: transactionId++,
+        status: "SUCCESS",
+        customer: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        amount: roundedAmount,
+        paymentMethod: "telebirr",
+        chapaReference: chapaRef,
+        bankReference: bankRef,
+        timestamp: randomDate.toISOString(),
+      })
     }
-
-    // Apply exponential multiplier for recent transactions (keep amounts even)
-    if (exponentialFactor > 0.8) {
-      const multipliers = [1, 1.2, 1.5, 1.8, 2]
-      const multiplier = multipliers[Math.floor(Math.random() * multipliers.length)]
-      amount = Math.round((amount * multiplier) / 25) * 25 // Round to nearest 25 to keep amounts smaller
-    }
-
-    const chapaRef = `AP${Math.random().toString(36).substring(2, 12)}`
-    const bankRef = `CAR${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-
-    transactions.push({
-      id: i + 1,
-      status: "SUCCESS",
-      customer: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      amount: amount,
-      paymentMethod: "telebirr",
-      chapaReference: chapaRef,
-      bankReference: bankRef,
-      timestamp: transactionDate.toISOString(),
-    })
-  }
+  })
 
   return transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 }
