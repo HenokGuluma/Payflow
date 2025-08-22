@@ -56,7 +56,36 @@ const generateWithdrawalHistory = (userType: string) => {
       }
 
       const status = randomStatus()
-      const amount = Math.floor(Math.random() * 95000) + 5000 // 5K-100K ETB
+      
+      // Generate more varied withdrawal amounts
+      const random = Math.random()
+      const spreadRandom = Math.random()
+      
+      let amount
+      if (spreadRandom < 0.12) {
+        // 12% smaller withdrawals (2K-15K ETB)
+        amount = Math.floor(Math.random() * 13000) + 2000
+      } else if (spreadRandom < 0.20) {
+        // 8% larger withdrawals (50K-150K ETB)
+        amount = Math.floor(Math.random() * 100000) + 50000
+      } else {
+        // 80% medium withdrawals (8K-60K ETB)
+        amount = Math.floor(Math.random() * 52000) + 8000
+      }
+      
+      // Apply even/odd ratio (maintaining 75/25 ratio roughly)
+      if (random < 0.75) {
+        // 75% even amounts (round to nearest 500 or 1000)
+        if (amount > 20000) {
+          amount = Math.round(amount / 1000) * 1000
+        } else {
+          amount = Math.round(amount / 500) * 500
+        }
+      } else {
+        // 25% odd amounts (create irregular amounts)
+        amount = Math.round(amount / 100) * 100 + Math.floor(Math.random() * 100)
+      }
+      
       const bank = banks[Math.floor(Math.random() * banks.length)]
       
       // Generate random date within the specific month

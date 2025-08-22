@@ -168,18 +168,42 @@ const generateTransactions = (userType: string) => {
         // For the last transaction, use remaining amount to hit exact target
         amount = monthData.targetRevenue - monthTotal
       } else {
-        // Generate amounts around the average with mostly even numbers
+        // Generate more varied amounts with larger spread
         const random = Math.random()
-        const variation = avgAmount * 0.8 // ±80% variation
-        const baseAmount = avgAmount + (random - 0.5) * variation
+        const spreadRandom = Math.random()
         
-        // Round to mostly even amounts
-        if (random < 0.85) {
-          // 85% even amounts (rounded to nearest 50)
-          amount = Math.round(baseAmount / 50) * 50
+        // Create different tiers of amounts for more variation
+        let baseAmount
+        if (spreadRandom < 0.15) {
+          // 15% smaller amounts (20-60% of average)
+          baseAmount = avgAmount * (0.2 + Math.random() * 0.4)
+        } else if (spreadRandom < 0.25) {
+          // 10% larger amounts (150-300% of average)
+          baseAmount = avgAmount * (1.5 + Math.random() * 1.5)
         } else {
-          // 15% odd amounts (rounded to nearest 25)
-          amount = Math.round(baseAmount / 25) * 25
+          // 75% around average (60-150% of average)
+          baseAmount = avgAmount * (0.6 + Math.random() * 0.9)
+        }
+        
+        // Add some randomness within the tier
+        const variation = baseAmount * 0.3 // ±30% variation within tier
+        baseAmount = baseAmount + (Math.random() - 0.5) * variation
+        
+        // Round to mostly even amounts (maintaining 85/15 ratio)
+        if (random < 0.85) {
+          // 85% even amounts
+          if (baseAmount > 1000) {
+            amount = Math.round(baseAmount / 100) * 100 // Round to nearest 100
+          } else {
+            amount = Math.round(baseAmount / 50) * 50 // Round to nearest 50
+          }
+        } else {
+          // 15% odd amounts
+          if (baseAmount > 1000) {
+            amount = Math.round(baseAmount / 25) * 25 // Creates more varied odd amounts
+          } else {
+            amount = Math.round(baseAmount / 13) * 13 // Creates irregular amounts
+          }
         }
         
         // Ensure minimum amount
