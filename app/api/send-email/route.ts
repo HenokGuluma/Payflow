@@ -12,24 +12,17 @@ export async function POST(request: NextRequest) {
     const emailUser = process.env.EMAIL_USER
     const emailPassword = process.env.EMAIL_PASSWORD
 
-    if (!emailUser || !emailPassword || 
-        emailUser === 'demo@example.com' || 
-        emailPassword === 'demo-password') {
-      
-      console.log('Email credentials not configured - running in demo mode')
-      console.log('📧 To enable real email sending:')
-      console.log('1. Click the Secrets tool in Replit sidebar')
-      console.log('2. Add EMAIL_USER with your Gmail address')
-      console.log('3. Add EMAIL_PASSWORD with your Gmail app password')
-      console.log('4. Generate app password: https://myaccount.google.com/apppasswords')
+    console.log('Email credentials check:', {
+      emailUser: emailUser ? 'configured' : 'missing',
+      emailPassword: emailPassword ? 'configured' : 'missing'
+    })
 
-      // Simulate realistic delay
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Email sent successfully! (Demo mode - configure EMAIL_USER and EMAIL_PASSWORD in Secrets to enable real emails)' 
-      })
+    if (!emailUser || !emailPassword) {
+      console.error('Email credentials not found in environment variables')
+      return NextResponse.json(
+        { error: 'Email service not configured. Please add EMAIL_USER and EMAIL_PASSWORD in Secrets.' },
+        { status: 500 }
+      )
     }
 
     // Create transporter with proper Gmail configuration
@@ -43,8 +36,13 @@ export async function POST(request: NextRequest) {
         pass: emailPassword,
       },
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      pool: true,
+      maxConnections: 1,
+      rateDelta: 20000,
+      rateLimit: 5
     })
 
     // Verify transporter configuration
