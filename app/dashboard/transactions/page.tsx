@@ -111,7 +111,25 @@ const generateTransactions = (userType: string) => {
   const domains = ["gmail.com"]
 
   // Generate diverse customer pool
-  const customers = []
+  type Customer = {
+  name: string
+  email: string
+  phone: string
+}
+
+ type Transaction = {
+    id: number,
+    status: string,
+    customer: string,
+    email: string,
+    phone: string,
+    amount: number,
+    paymentMethod:string,
+    chapaReference: string,
+    bankReference: string,
+    timestamp: string,
+}
+  const customers:Customer[] = []
   for (let i = 0; i < 5000; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
@@ -140,7 +158,7 @@ const generateTransactions = (userType: string) => {
     { month: "Aug", transactions: 19455, targetRevenue: 5200000 }, // 5.2M
   ]
 
-  const transactions = []
+  const transactions:Transaction[]= []
   let transactionId = 1
   let totalGenerated = 0
 

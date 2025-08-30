@@ -269,7 +269,7 @@ export default function DashboardPage() {
                     <YAxis tickFormatter={formatYAxis} tick={{ fill: "#374151", fontSize: 12 }} />
                     <Tooltip
                       formatter={(value) => [
-                        `ETB ${userType === "registered" ? "0" : (value / 1000000).toFixed(1)}M`,
+                        `ETB ${userType === "registered" ? "0" : (Number(value) / 1000000).toFixed(1)}M`,
                         "Revenue",
                       ]}
                       contentStyle={{

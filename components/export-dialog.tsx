@@ -16,6 +16,8 @@ import { ExportService } from "@/lib/export-service"
 interface ExportDialogProps {
   title: string
   data: any[]
+  headers?: string[];
+  filename?: string;
   summary?: Record<string, any>
   children: React.ReactNode
   filterByDate?: (data: any[], startDate: Date, endDate: Date) => any[]
@@ -25,6 +27,8 @@ interface ExportDialogProps {
 export function ExportDialog({
   title,
   data,
+  headers,
+  filename,
   summary = {},
   children,
   filterByDate,

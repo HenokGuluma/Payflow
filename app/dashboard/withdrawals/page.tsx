@@ -15,7 +15,15 @@ const generateWithdrawalHistory = (userType: string) => {
     return []
   }
 
-  const withdrawals = []
+  type Withdrawal = {
+     id: string,
+      amount: number,
+      status: string,
+      bank: string,
+      date: string,
+      reference: string
+  }
+  const withdrawals: Withdrawal[] = []
   const banks = [
     "Commercial Bank of Ethiopia",
     "Dashen Bank",
